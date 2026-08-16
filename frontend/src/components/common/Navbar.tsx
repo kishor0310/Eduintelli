@@ -68,9 +68,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           {!isAuthenticated && (
             <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
               <Link to="/courses" className="hover:text-white transition-colors">Courses</Link>
-              <a href="#features" className="hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
-              <a href="#ai-engine" className="hover:text-white transition-colors">AI Engine</a>
+              <a href="/#features" className="hover:text-white transition-colors">Features</a>
+              <a href="/#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+              <a href="/#ai-engine" className="hover:text-white transition-colors">AI Engine</a>
+              <Link to="/contact" className="hover:text-white transition-colors">Contact & FAQ</Link>
             </nav>
           )}
 

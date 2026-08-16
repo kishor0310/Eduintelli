@@ -62,7 +62,7 @@ INSERT INTO students (id, user_id, roll_number, department, semester, batch, cgp
 ('std-08', 'usr-stud-08', 'IT2023-008', 'Information Technology', 4, '2023-2027', 2.60, 69, 'HIGH'),
 ('std-09', 'usr-stud-09', 'CS2023-009', 'Computer Science', 4, '2023-2027', 3.75, 16, 'LOW'),
 ('std-10', 'usr-stud-10', 'AI2023-010', 'AI & Data Science', 4, '2023-2027', 2.80, 58, 'MEDIUM'),
-('std-11', 'usr-stud-11', 'Computer Science', 'CS2023-011', 4, '2023-2027', 3.95, 8, 'LOW'),
+('std-11', 'usr-stud-11', 'CS2023-011', 'Computer Science', 4, '2023-2027', 3.95, 8, 'LOW'),
 ('std-12', 'usr-stud-12', 'IT2023-012', 'Information Technology', 4, '2023-2027', 2.30, 81, 'HIGH'),
 ('std-13', 'usr-stud-13', 'CS2023-013', 'Computer Science', 4, '2023-2027', 3.40, 32, 'MEDIUM'),
 ('std-14', 'usr-stud-14', 'AI2023-014', 'AI & Data Science', 4, '2023-2027', 3.80, 15, 'LOW'),

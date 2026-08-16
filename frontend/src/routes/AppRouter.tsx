@@ -15,6 +15,7 @@ import { AttendancePage } from '../pages/Attendance/AttendancePage';
 import { AssignmentsPage } from '../pages/Assignments/AssignmentsPage';
 import { ExaminationsPage } from '../pages/Examinations/ExaminationsPage';
 import { ReportPage } from '../pages/Reports/ReportPage';
+import { ContactPage } from '../pages/Contact/ContactPage';
 import { LoginPage } from '../pages/Auth/LoginPage';
 import { RegisterPage } from '../pages/Auth/RegisterPage';
 
@@ -26,6 +27,7 @@ export const AppRouter: React.FC = () => {
       {/* Public Pages */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
       </Route>

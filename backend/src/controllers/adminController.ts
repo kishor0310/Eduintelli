@@ -24,11 +24,40 @@ export class AdminController {
       const avgGpa = Number(avgGpaRes?.avg_cgpa ? Number(avgGpaRes.avg_cgpa).toFixed(2) : 3.42);
 
       // 2. Department-Level Comparative Analytics
-      const departmentAnalytics = [
-        { department: 'Computer Science', students: 10, avgGpa: 3.48, avgAttendance: 86, atRiskStudents: 4, satisfaction: 4.8 },
-        { department: 'AI & Data Science', students: 6, avgGpa: 3.62, avgAttendance: 91, atRiskStudents: 2, satisfaction: 4.9 },
-        { department: 'Information Technology', students: 5, avgGpa: 3.25, avgAttendance: 82, atRiskStudents: 3, satisfaction: 4.7 },
-      ];
+      const deptStats = await db.query<any>(
+        `SELECT s.department,
+                COUNT(s.id) as students,
+                AVG(s.cgpa) as avg_gpa,
+                COUNT(CASE WHEN s.risk_level = 'HIGH' THEN 1 END) as high_risk,
+                COUNT(CASE WHEN s.risk_level IN ('HIGH', 'MEDIUM') THEN 1 END) as at_risk
+         FROM students s
+         GROUP BY s.department`
+      );
+
+      const deptAttendance = await db.query<any>(
+        `SELECT s.department,
+                COUNT(CASE WHEN a.status = 'PRESENT' THEN 1 END) as present_count,
+                COUNT(a.id) as total_attendance
+         FROM students s
+         LEFT JOIN attendance a ON s.id = a.student_id
+         GROUP BY s.department`
+      );
+
+      const deptAttMap: Record<string, number> = {};
+      deptAttendance.forEach(d => {
+        const total = Number(d.total_attendance || 0);
+        const present = Number(d.present_count || 0);
+        deptAttMap[d.department] = total > 0 ? Math.round((present / total) * 100) : 85;
+      });
+
+      const departmentAnalytics = deptStats.map(d => ({
+        department: d.department,
+        students: Number(d.students || 0),
+        avgGpa: Number(Number(d.avg_gpa || 3.4).toFixed(2)),
+        avgAttendance: deptAttMap[d.department] || 85,
+        atRiskStudents: Number(d.at_risk || 0),
+        satisfaction: 4.8,
+      }));
 
       // 3. Course Performance & Pass Probability
       const coursePerformanceList = await db.query<any>(

@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/database/seedRunner.ts",
-    "test": "tsx tests/backend/api.test.ts"
+    "test": "tsx ../tests/backend/api.test.ts && tsx ../tests/ai/riskEngine.test.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
