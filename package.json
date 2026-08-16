@@ -1,0 +1,29 @@
+{
+  "name": "edu-intelli-monorepo",
+  "version": "1.0.0",
+  "description": "EduIntelli — AI-Powered Academic Intelligence Platform",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n \"BACKEND,FRONTEND\" -c \"cyan.bold,magenta.bold\" \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
+    "start": "npm run start --workspace=backend",
+    "test": "npm run test --workspace=backend && npm run test --workspace=frontend",
+    "seed": "npm run seed --workspace=backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "education",
+    "ai",
+    "academic-intelligence",
+    "early-intervention",
+    "analytics"
+  ],
+  "author": "EduIntelli Team",
+  "license": "MIT"
+}
