@@ -6,7 +6,7 @@ import { csrfProtection } from '../middleware/csrf';
 
 const router = Router();
 
-router.post('/login', authLimiter, AuthController.login);
+router.post('/login', authLimiter, csrfProtection, AuthController.login);
 router.post('/register', authLimiter, csrfProtection, AuthController.register);
 router.get('/me', authenticate, AuthController.getMe);
 

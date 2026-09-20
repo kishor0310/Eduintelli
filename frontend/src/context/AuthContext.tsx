@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password?: string) => Promise<User | null>;
   quickLoginAs: (role: UserRole, customStudentId?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -58,7 +58,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('eduintelli_token', res.token);
         setToken(res.token);
         setUser(res.user);
-      } else {
+        return res.user;
+      }
+      else {
         throw new Error(res.message || 'Login failed');
       }
     } finally {

@@ -19,9 +19,15 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(email, password);
+      const loggedUser = await login(email, password);
       toast.success('Welcome back!');
-      navigate('/student/dashboard');
+      if (loggedUser?.role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else if (loggedUser?.role === 'TEACHER') {
+        navigate('/teacher/dashboard');
+      } else {
+        navigate('/student/dashboard');
+      }
     } catch (err: any) {
       toast.error('Authentication Error', err.message);
     } finally {

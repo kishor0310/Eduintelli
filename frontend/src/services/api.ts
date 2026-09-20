@@ -8,6 +8,8 @@ export async function apiRequest<T = any>(
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRF-Token': 'eduintelli-csrf-token',
     ...(options.headers as Record<string, string> || {}),
   };
 
