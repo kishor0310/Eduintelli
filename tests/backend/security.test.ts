@@ -262,8 +262,19 @@ async function runSecurityTests() {
     throw new Error('Expected 403 on teacher student attendance IDOR, got ' + res19.status);
   }
 
+  // 20. Teacher arbitrary student AI analysis IDOR blocked (CWE-639)
+  const res20 = await fetch(baseUrl + '/ai/risk/std-02', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res20.status === 403) {
+    console.log('✅ 20. Teacher arbitrary student AI analysis blocked (403 Forbidden)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on teacher student AI analysis IDOR, got ' + res20.status);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/19 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/20 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

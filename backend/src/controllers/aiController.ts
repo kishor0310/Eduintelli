@@ -11,6 +11,12 @@ export class AIController {
       }
       return { studentId: req.user.studentId || 'std-01' };
     }
+    if (req.user?.role === 'TEACHER') {
+      // Teachers must not request arbitrary student data; enforce relationship check or deny
+      if (req.params.studentId) {
+        return { error: 'Forbidden: Teachers cannot access arbitrary student AI analysis.' };
+      }
+    }
     const studentId = req.params.studentId || req.user?.studentId || 'std-01';
     return { studentId };
   }
