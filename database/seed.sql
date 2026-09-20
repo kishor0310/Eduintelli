@@ -1,42 +1,42 @@
 -- EduIntelli Comprehensive Seed Data
 -- Seeded for Demo & Hackathon Presentation
 -- Password for all demo accounts: Demo@123
--- Hash: $2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW
+-- Hash: $2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG
 
 -- 1. Insert Users (Admin, Teachers, Students)
 INSERT INTO users (id, name, email, password_hash, role, avatar_url, phone, status) VALUES
 -- Admin
-('usr-admin-01', 'Dr. Sarah Jenkins', 'admin@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'ADMIN', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150', '+1 555-0100', 'ACTIVE'),
+('usr-admin-01', 'Dr. Sarah Jenkins', 'admin@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'ADMIN', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150', '+1 555-0100', 'ACTIVE'),
 
 -- Teachers
-('usr-teach-01', 'Prof. Alan Turing', 'teacher@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'TEACHER', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', '+1 555-0101', 'ACTIVE'),
-('usr-teach-02', 'Dr. Evelyn Reed', 'evelyn.reed@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'TEACHER', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150', '+1 555-0102', 'ACTIVE'),
-('usr-teach-03', 'Prof. Marcus Vance', 'marcus.vance@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'TEACHER', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', '+1 555-0103', 'ACTIVE'),
-('usr-teach-04', 'Dr. Clara Oswald', 'clara.oswald@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'TEACHER', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', '+1 555-0104', 'ACTIVE'),
-('usr-teach-05', 'Prof. Robert Langdon', 'robert.langdon@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'TEACHER', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '+1 555-0105', 'ACTIVE'),
+('usr-teach-01', 'Prof. Alan Turing', 'teacher@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'TEACHER', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', '+1 555-0101', 'ACTIVE'),
+('usr-teach-02', 'Dr. Evelyn Reed', 'evelyn.reed@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'TEACHER', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150', '+1 555-0102', 'ACTIVE'),
+('usr-teach-03', 'Prof. Marcus Vance', 'marcus.vance@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'TEACHER', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', '+1 555-0103', 'ACTIVE'),
+('usr-teach-04', 'Dr. Clara Oswald', 'clara.oswald@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'TEACHER', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', '+1 555-0104', 'ACTIVE'),
+('usr-teach-05', 'Prof. Robert Langdon', 'robert.langdon@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'TEACHER', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '+1 555-0105', 'ACTIVE'),
 
 -- Students (Alex Rivera = Default Student Demo, Jordan Hayes = High Risk, Priya = Medium Risk, + 18 more)
-('usr-stud-01', 'Alex Rivera', 'student@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150', '+1 555-0201', 'ACTIVE'),
-('usr-stud-02', 'Jordan Hayes', 'jordan.hayes@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150', '+1 555-0202', 'ACTIVE'),
-('usr-stud-03', 'Priya Sharma', 'priya.sharma@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '+1 555-0203', 'ACTIVE'),
-('usr-stud-04', 'Liam Chen', 'liam.chen@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150', '+1 555-0204', 'ACTIVE'),
-('usr-stud-05', 'Emma Watson', 'emma.watson@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150', '+1 555-0205', 'ACTIVE'),
-('usr-stud-06', 'Noah Davis', 'noah.davis@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150', '+1 555-0206', 'ACTIVE'),
-('usr-stud-07', 'Sophia Rodriguez', 'sophia.rodriguez@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', '+1 555-0207', 'ACTIVE'),
-('usr-stud-08', 'Ethan Taylor', 'ethan.taylor@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150', '+1 555-0208', 'ACTIVE'),
-('usr-stud-09', 'Olivia Martinez', 'olivia.martinez@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150', '+1 555-0209', 'ACTIVE'),
-('usr-stud-10', 'Lucas Anderson', 'lucas.anderson@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', '+1 555-0210', 'ACTIVE'),
-('usr-stud-11', 'Ava Thomas', 'ava.thomas@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', '+1 555-0211', 'ACTIVE'),
-('usr-stud-12', 'Mason Jackson', 'mason.jackson@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150', '+1 555-0212', 'ACTIVE'),
-('usr-stud-13', 'Isabella White', 'isabella.white@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', '+1 555-0213', 'ACTIVE'),
-('usr-stud-14', 'James Harris', 'james.harris@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150', '+1 555-0214', 'ACTIVE'),
-('usr-stud-15', 'Mia Martin', 'mia.martin@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '+1 555-0215', 'ACTIVE'),
-('usr-stud-16', 'Benjamin Clark', 'benjamin.clark@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', '+1 555-0216', 'ACTIVE'),
-('usr-stud-17', 'Charlotte Lewis', 'charlotte.lewis@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150', '+1 555-0217', 'ACTIVE'),
-('usr-stud-18', 'Elijah Robinson', 'elijah.robinson@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '+1 555-0218', 'ACTIVE'),
-('usr-stud-19', 'Amelia Walker', 'amelia.walker@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150', '+1 555-0219', 'ACTIVE'),
-('usr-stud-20', 'William Hall', 'william.hall@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', '+1 555-0220', 'ACTIVE'),
-('usr-stud-21', 'Harper Allen', 'harper.allen@demo.com', '$2b$10$u8L71n5BfvGkUaP9v1f1k.c4gU1D5dY7tX2qN0eK9gR8h6yK5i6lW', 'STUDENT', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', '+1 555-0221', 'ACTIVE');
+('usr-stud-01', 'Alex Rivera', 'student@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150', '+1 555-0201', 'ACTIVE'),
+('usr-stud-02', 'Jordan Hayes', 'jordan.hayes@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150', '+1 555-0202', 'ACTIVE'),
+('usr-stud-03', 'Priya Sharma', 'priya.sharma@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '+1 555-0203', 'ACTIVE'),
+('usr-stud-04', 'Liam Chen', 'liam.chen@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150', '+1 555-0204', 'ACTIVE'),
+('usr-stud-05', 'Emma Watson', 'emma.watson@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150', '+1 555-0205', 'ACTIVE'),
+('usr-stud-06', 'Noah Davis', 'noah.davis@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150', '+1 555-0206', 'ACTIVE'),
+('usr-stud-07', 'Sophia Rodriguez', 'sophia.rodriguez@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', '+1 555-0207', 'ACTIVE'),
+('usr-stud-08', 'Ethan Taylor', 'ethan.taylor@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150', '+1 555-0208', 'ACTIVE'),
+('usr-stud-09', 'Olivia Martinez', 'olivia.martinez@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150', '+1 555-0209', 'ACTIVE'),
+('usr-stud-10', 'Lucas Anderson', 'lucas.anderson@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', '+1 555-0210', 'ACTIVE'),
+('usr-stud-11', 'Ava Thomas', 'ava.thomas@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', '+1 555-0211', 'ACTIVE'),
+('usr-stud-12', 'Mason Jackson', 'mason.jackson@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150', '+1 555-0212', 'ACTIVE'),
+('usr-stud-13', 'Isabella White', 'isabella.white@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', '+1 555-0213', 'ACTIVE'),
+('usr-stud-14', 'James Harris', 'james.harris@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150', '+1 555-0214', 'ACTIVE'),
+('usr-stud-15', 'Mia Martin', 'mia.martin@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', '+1 555-0215', 'ACTIVE'),
+('usr-stud-16', 'Benjamin Clark', 'benjamin.clark@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', '+1 555-0216', 'ACTIVE'),
+('usr-stud-17', 'Charlotte Lewis', 'charlotte.lewis@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150', '+1 555-0217', 'ACTIVE'),
+('usr-stud-18', 'Elijah Robinson', 'elijah.robinson@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', '+1 555-0218', 'ACTIVE'),
+('usr-stud-19', 'Amelia Walker', 'amelia.walker@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150', '+1 555-0219', 'ACTIVE'),
+('usr-stud-20', 'William Hall', 'william.hall@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', '+1 555-0220', 'ACTIVE'),
+('usr-stud-21', 'Harper Allen', 'harper.allen@demo.com', '$2a$10$rNMMSB8tamkOjySxKO07vuD6hhOR/Fp5FpkunmdrJlkt3LFPXhsKG', 'STUDENT', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', '+1 555-0221', 'ACTIVE');
 
 -- 2. Insert Admins
 INSERT INTO admins (id, user_id, department, admin_level) VALUES

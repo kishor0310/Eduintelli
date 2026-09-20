@@ -16,8 +16,8 @@ export class AuthController {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
-      // For hackathon demo convenience, also allow standard Demo@123 password match
-      const isMatch = password === 'Demo@123' || await bcrypt.compare(password, user.password_hash || '');
+      // Remove demo back‑door; only allow bcrypt verification
+      const isMatch = await bcrypt.compare(password, user.password_hash || '');
       if (!isMatch) {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
