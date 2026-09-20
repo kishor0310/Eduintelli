@@ -309,8 +309,20 @@ async function runSecurityTests() {
     throw new Error('Examination endpoint missing rate limiting header');
   }
 
+  // 24. Rate limiting on Report endpoints (CWE-770 & CWE-400)
+  const res24 = await fetch(baseUrl + '/reports/student', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const reportRemaining = res24.headers.get('ratelimit-remaining') || res24.headers.get('x-ratelimit-remaining');
+  if (reportRemaining !== null) {
+    console.log('✅ 24. Reports endpoint has rate limiter active (Remaining: ' + reportRemaining + ')');
+    passed++;
+  } else {
+    throw new Error('Reports endpoint missing rate limiting header');
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/23 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/24 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
