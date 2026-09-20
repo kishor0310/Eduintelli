@@ -251,8 +251,19 @@ async function runSecurityTests() {
     throw new Error('Expected 403 on teacher dashboard with student token, got ' + res18.status);
   }
 
+  // 19. Teacher arbitrary student attendance IDOR blocked (CWE-639)
+  const res19 = await fetch(baseUrl + '/attendance/student/std-02', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res19.status === 403) {
+    console.log('✅ 19. Teacher arbitrary student attendance access blocked (403 Forbidden)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on teacher student attendance IDOR, got ' + res19.status);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/18 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/19 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
