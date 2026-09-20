@@ -6,7 +6,17 @@ import { AIService } from '../services/ai/aiService';
 export class StudentController {
   public static async getDashboard(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.id || req.user?.studentId || 'std-01';
+      let studentId = req.params.id || req.user?.studentId;
+      if (req.user?.role === 'STUDENT') {
+        if (req.params.id && req.params.id !== req.user.studentId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Students can only access their own dashboard.',
+          });
+        }
+        studentId = req.user.studentId;
+      }
+      studentId = studentId || 'std-01';
 
       // 1. Run AI Intelligence Pipeline
       const aiAnalysis = await AIService.analyzeStudent(studentId);
@@ -135,7 +145,17 @@ export class StudentController {
 
   public static async getStudentTimetable(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.id || req.user?.studentId || 'std-01';
+      let studentId = req.params.id || req.user?.studentId;
+      if (req.user?.role === 'STUDENT') {
+        if (req.params.id && req.params.id !== req.user.studentId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Students can only access their own timetable.',
+          });
+        }
+        studentId = req.user.studentId;
+      }
+      studentId = studentId || 'std-01';
 
       const schedule = await db.query<any>(
         `SELECT cl.id, cl.section, cl.room_number, cl.day_of_week, cl.start_time, cl.end_time,

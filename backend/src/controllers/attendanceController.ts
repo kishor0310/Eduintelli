@@ -6,7 +6,17 @@ import { markAttendanceSchema } from '../validators';
 export class AttendanceController {
   public static async getStudentAttendance(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.studentId || req.user?.studentId || 'std-01';
+      let studentId = req.params.studentId || req.user?.studentId;
+      if (req.user?.role === 'STUDENT') {
+        if (req.params.studentId && req.params.studentId !== req.user.studentId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Students can only view their own attendance records.',
+          });
+        }
+        studentId = req.user.studentId;
+      }
+      studentId = studentId || 'std-01';
 
       // 1. Fetch Subject-wise summary
       const subjectSummary = await db.query<any>(
@@ -100,6 +110,12 @@ export class AttendanceController {
 
   public static async markAttendanceBatch(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Only teachers or administrators can record attendance.',
+        });
+      }
       const data = markAttendanceSchema.parse(req.body);
 
       for (const record of data.records) {

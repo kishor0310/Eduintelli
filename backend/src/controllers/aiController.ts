@@ -4,10 +4,25 @@ import { AuthRequest } from '../middleware/auth';
 import { InsightGenerator } from '../services/ai/insightGenerator';
 
 export class AIController {
+  private static resolveStudentId(req: AuthRequest): { studentId?: string; error?: string } {
+    if (req.user?.role === 'STUDENT') {
+      if (req.params.studentId && req.params.studentId !== req.user.studentId) {
+        return { error: 'Forbidden: Students can only access their own AI risk analysis.' };
+      }
+      return { studentId: req.user.studentId || 'std-01' };
+    }
+    const studentId = req.params.studentId || req.user?.studentId || 'std-01';
+    return { studentId };
+  }
+
   public static async getStudentRisk(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.studentId || req.user?.studentId || 'std-01';
-      const analysis = await AIService.analyzeStudent(studentId);
+      const { studentId, error } = AIController.resolveStudentId(req);
+      if (error) {
+        return res.status(403).json({ success: false, message: error });
+      }
+
+      const analysis = await AIService.analyzeStudent(studentId!);
 
       return res.status(200).json({
         success: true,
@@ -24,8 +39,12 @@ export class AIController {
 
   public static async getStudentRecommendations(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.studentId || req.user?.studentId || 'std-01';
-      const analysis = await AIService.analyzeStudent(studentId);
+      const { studentId, error } = AIController.resolveStudentId(req);
+      if (error) {
+        return res.status(403).json({ success: false, message: error });
+      }
+
+      const analysis = await AIService.analyzeStudent(studentId!);
 
       return res.status(200).json({
         success: true,
@@ -39,8 +58,12 @@ export class AIController {
 
   public static async getStudentInsights(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.studentId || req.user?.studentId || 'std-01';
-      const analysis = await AIService.analyzeStudent(studentId);
+      const { studentId, error } = AIController.resolveStudentId(req);
+      if (error) {
+        return res.status(403).json({ success: false, message: error });
+      }
+
+      const analysis = await AIService.analyzeStudent(studentId!);
 
       return res.status(200).json({
         success: true,

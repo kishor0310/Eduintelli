@@ -40,8 +40,8 @@ export const StudentDashboard: React.FC = () => {
   const loadDashboard = async () => {
     setIsLoading(true);
     try {
-      const studentId = user?.studentId || 'std-01';
-      const res = await api.getStudentDashboard(studentId);
+      // Securely request authenticated student dashboard from token identity to prevent IDOR (CWE-639)
+      const res = await api.getStudentDashboard();
       if (res.success && res.data) {
         setData(res.data);
       }

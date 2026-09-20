@@ -29,8 +29,8 @@ export const ReportPage: React.FC = () => {
   const loadReport = async () => {
     setIsLoading(true);
     try {
-      const studentId = user?.studentId || 'std-01';
-      const res = await api.getPerformanceReport(studentId);
+      // Call report endpoint without client-controlled fallback to prevent IDOR
+      const res = await api.getPerformanceReport(user?.role === 'STUDENT' ? undefined : user?.studentId);
       if (res.success && res.report) {
         setReport(res.report);
       }

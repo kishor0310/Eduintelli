@@ -6,7 +6,17 @@ import { AIService } from '../services/ai/aiService';
 export class ReportController {
   public static async getStudentPerformanceReport(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.params.studentId || req.user?.studentId || 'std-01';
+      let studentId = req.params.studentId || req.user?.studentId;
+      if (req.user?.role === 'STUDENT') {
+        if (req.params.studentId && req.params.studentId !== req.user.studentId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Students can only view their own performance reports.',
+          });
+        }
+        studentId = req.user.studentId;
+      }
+      studentId = studentId || 'std-01';
 
       // 1. Run AI analysis
       const ai = await AIService.analyzeStudent(studentId);

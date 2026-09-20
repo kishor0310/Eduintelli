@@ -50,6 +50,12 @@ export class AssignmentController {
 
   public static async createAssignment(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Only teachers or administrators can create assignments.',
+        });
+      }
       const data = createAssignmentSchema.parse(req.body);
       const newId = `asg-${Date.now()}`;
 

@@ -38,8 +38,8 @@ export const AttendancePage: React.FC = () => {
   const loadAttendance = async () => {
     setIsLoading(true);
     try {
-      const studentId = user?.studentId || 'std-01';
-      const res = await api.getStudentAttendance(studentId);
+      // Call attendance endpoint without client-controlled fallback to prevent IDOR
+      const res = await api.getStudentAttendance(user?.role === 'STUDENT' ? undefined : user?.studentId);
       if (res.success && res.data) {
         setData(res.data);
       }

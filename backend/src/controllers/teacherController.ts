@@ -7,7 +7,23 @@ import { interventionSchema } from '../validators';
 export class TeacherController {
   public static async getDashboard(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const teacherId = req.params.id || req.user?.teacherId || 'tch-01';
+      if (req.user?.role === 'STUDENT') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Students cannot access teacher dashboards.',
+        });
+      }
+      let teacherId = req.params.id || req.user?.teacherId;
+      if (req.user?.role === 'TEACHER') {
+        if (req.params.id && req.params.id !== req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Teachers can only access their own dashboard.',
+          });
+        }
+        teacherId = req.user.teacherId;
+      }
+      teacherId = teacherId || 'tch-01';
 
       // 1. Fetch Teacher Profile
       const teacher = await db.get<any>(

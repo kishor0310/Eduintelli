@@ -47,3 +47,8 @@ export function authorize(allowedRoles: UserRole[]) {
     next();
   };
 }
+
+export const authorizeAdmin = authorize(['ADMIN']);
+export const authorizeTeacher = authorize(['TEACHER', 'ADMIN']);
+export const authorizeStudent = authorize(['STUDENT', 'ADMIN']);
+
