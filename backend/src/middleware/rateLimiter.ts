@@ -35,3 +35,15 @@ export const attendanceLimiter = rateLimit({
     message: 'Rate limit exceeded for attendance recording. Please slow down.',
   },
 });
+
+// AI Risk calculation rate limiter (prevents resource exhaustion - CWE-400 / CWE-770)
+export const riskLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many requests, please try again later.",
+  },
+});

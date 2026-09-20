@@ -273,8 +273,20 @@ async function runSecurityTests() {
     throw new Error('Expected 403 on teacher student AI analysis IDOR, got ' + res20.status);
   }
 
+  // 21. Rate limiting on AI risk endpoint (CWE-770 & CWE-400)
+  const res21 = await fetch(baseUrl + '/ai/risk', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const riskRemaining = res21.headers.get('ratelimit-remaining') || res21.headers.get('x-ratelimit-remaining');
+  if (riskRemaining !== null) {
+    console.log('✅ 21. AI risk endpoint has rate limiter active (Remaining: ' + riskRemaining + ')');
+    passed++;
+  } else {
+    throw new Error('AI risk endpoint missing rate limiting header');
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/20 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/21 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
