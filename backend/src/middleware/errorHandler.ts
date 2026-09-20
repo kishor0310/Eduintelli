@@ -20,6 +20,14 @@ export function errorHandler(
     });
   }
 
+  // Handle CORS and CSRF rejections as 403 Forbidden
+  if (err.message && (err.message.includes('CORS') || err.message.includes('CSRF'))) {
+    return res.status(403).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 

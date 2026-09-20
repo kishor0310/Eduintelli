@@ -23,13 +23,11 @@ router.use('/examinations', examRoutes);
 router.use('/ai', aiRoutes);
 router.use('/reports', reportRoutes);
 
-// Health check endpoint
+// Health check endpoint (no version or stack info leakage - CWE-200)
 router.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
-    platform: 'EduIntelli — AI-Powered Academic Intelligence Platform',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
   });
 });
 

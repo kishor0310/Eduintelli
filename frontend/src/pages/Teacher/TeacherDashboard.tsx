@@ -48,8 +48,8 @@ export const TeacherDashboard: React.FC = () => {
   const loadDashboard = async () => {
     setIsLoading(true);
     try {
-      const teacherId = user?.teacherId || 'tch-01';
-      const res = await api.getTeacherDashboard(teacherId);
+      // Fetch authenticated teacher dashboard via token identity to prevent auth bypass (CWE-287)
+      const res = await api.getTeacherDashboard();
       if (res.success && res.data) {
         setData(res.data);
       }

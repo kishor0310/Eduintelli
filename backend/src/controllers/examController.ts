@@ -20,6 +20,12 @@ export class ExamController {
       `;
       const params: any[] = [];
 
+      // Prevent Examination IDOR: Students can only view exams for enrolled courses (CWE-639)
+      if (req.user?.role === 'STUDENT' && studentId) {
+        params.push(studentId);
+        sql += ` AND ex.course_id IN (SELECT course_id FROM enrollments WHERE student_id = $${params.length})`;
+      }
+
       if (courseId) {
         params.push(courseId);
         sql += ` AND ex.course_id = $${params.length}`;
