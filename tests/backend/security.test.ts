@@ -297,8 +297,20 @@ async function runSecurityTests() {
     throw new Error('Courses endpoint missing rate limiting header');
   }
 
+  // 23. Rate limiting on Examination endpoints (CWE-770 & CWE-400)
+  const res23 = await fetch(baseUrl + '/examinations', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const examRemaining = res23.headers.get('ratelimit-remaining') || res23.headers.get('x-ratelimit-remaining');
+  if (examRemaining !== null) {
+    console.log('✅ 23. Examination endpoint has rate limiter active (Remaining: ' + examRemaining + ')');
+    passed++;
+  } else {
+    throw new Error('Examination endpoint missing rate limiting header');
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/22 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/23 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
