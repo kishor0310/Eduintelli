@@ -66,7 +66,7 @@ export async function authorizeCourseAccess(req: AuthRequest, res: Response, nex
 
   const courseId = req.params.id || req.params.courseId;
   if (!courseId) {
-    return next();
+    return res.status(400).json({ success: false, message: 'Course ID is required.' });
   }
 
   // Administrators have universal authorization
@@ -102,7 +102,7 @@ export async function authorizeCourseAccess(req: AuthRequest, res: Response, nex
   // Faculty must be the instructor of the course (IDOR protection - CWE-639)
   if (req.user.role === 'TEACHER') {
     const teacherId = req.user.teacherId;
-    if (course.teacher_id && teacherId && course.teacher_id !== teacherId) {
+    if (!teacherId || course.teacher_id !== teacherId) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: Faculty can only inspect course details for courses they instruct.',
@@ -111,6 +111,80 @@ export async function authorizeCourseAccess(req: AuthRequest, res: Response, nex
     return next();
   }
 
-  next();
+  // Deny all other access by default (prevents IDOR bypass - CWE-639)
+  return res.status(403).json({
+    success: false,
+    message: 'Forbidden: Unauthorized to access this course.',
+  });
+}
+
+/**
+ * Authorize Assignment Access (CWE-639 IDOR Prevention)
+ * Enforces object-level authorization for assignment retrieval endpoints.
+ * Verifies that students are enrolled in the assignment's course, teachers instruct the course, or users are administrators.
+ */
+export async function authorizeAssignmentAccess(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Authentication required.' });
+  }
+
+  const assignmentId = req.params.id || req.params.assignmentId;
+  if (!assignmentId) {
+    return res.status(400).json({ success: false, message: 'Assignment ID is required.' });
+  }
+
+  // Administrators have universal authorization
+  if (req.user.role === 'ADMIN') {
+    return next();
+  }
+
+  // Verify assignment existence
+  const assignment = await db.get<any>(
+    `SELECT a.id, a.course_id, c.teacher_id
+     FROM assignments a
+     JOIN courses c ON a.course_id = c.id
+     WHERE a.id = $1`,
+    [assignmentId]
+  );
+  if (!assignment) {
+    return res.status(404).json({ success: false, message: 'Assignment not found.' });
+  }
+
+  // Students must be enrolled in the course for this assignment (CWE-639 IDOR)
+  if (req.user.role === 'STUDENT') {
+    const studentId = req.user.studentId;
+    if (!studentId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No student profile associated.' });
+    }
+    const enrollment = await db.get<any>(
+      'SELECT id FROM enrollments WHERE student_id = $1 AND course_id = $2',
+      [studentId, assignment.course_id]
+    );
+    if (!enrollment) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You can only access assignments for courses in which you are enrolled.',
+      });
+    }
+    return next();
+  }
+
+  // Faculty must instruct the course for this assignment (CWE-639 IDOR)
+  if (req.user.role === 'TEACHER') {
+    const teacherId = req.user.teacherId;
+    if (!teacherId || assignment.teacher_id !== teacherId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Faculty can only access assignments for courses they instruct.',
+      });
+    }
+    return next();
+  }
+
+  // Deny all other access by default (prevents IDOR bypass - CWE-639)
+  return res.status(403).json({
+    success: false,
+    message: 'Forbidden: Unauthorized to access this assignment.',
+  });
 }
 

@@ -559,8 +559,29 @@ async function runSecurityTests() {
     throw new Error('Expected 400/403 for attendance without student profile, got ' + res41.status);
   }
 
+  // 42. Teacher accessing assignment from unassigned course blocked by authorizeAssignmentAccess (CWE-639 IDOR)
+  // asg-03 is for crs-02 (taught by tch-02); teacherToken is for tch-01
+  const res42 = await fetch(baseUrl + '/assignments/asg-03', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res42.status === 403) {
+    console.log('✅ 42. Teacher accessing another faculty\'s assignment blocked by authorizeAssignmentAccess (403 Forbidden - CWE-639 IDOR)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on teacher accessing another course assignment, got ' + res42.status);
+  }
+
+  // 43. Access to assignment retrieval endpoint without token rejected (401 - CWE-639)
+  const res43 = await fetch(baseUrl + '/assignments/asg-03');
+  if (res43.status === 401) {
+    console.log('✅ 43. Unauthenticated access to assignment retrieval endpoint rejected (401 - CWE-639)');
+    passed++;
+  } else {
+    throw new Error('Expected 401 on unauthenticated assignment fetch, got ' + res43.status);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/41 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/43 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

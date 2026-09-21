@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AssignmentController } from '../controllers/assignmentController';
-import { authenticate, authorizeTeacher } from '../middleware/auth';
+import { authenticate, authorizeTeacher, authorizeAssignmentAccess } from '../middleware/auth';
 import { assignmentLimiter, submissionLimiter } from '../middleware/rateLimiter';
 import { csrfProtection } from '../middleware/csrf';
 
@@ -19,6 +19,6 @@ router.post('/grade', authenticate, authorizeTeacher, csrfProtection, submission
 router.get('/:assignmentId/submissions', authenticate, authorizeTeacher, assignmentLimiter, AssignmentController.getSubmissionsForAssignment);
 
 // IDOR-protected assignment retrieval by ID (CWE-639)
-router.get('/:id', authenticate, assignmentLimiter, AssignmentController.getAssignmentById);
+router.get('/:id', authenticate, authorizeAssignmentAccess, assignmentLimiter, AssignmentController.getAssignmentById);
 
 export default router;
