@@ -3,12 +3,41 @@ import { AIService } from '../services/ai/aiService';
 import { AuthRequest } from '../middleware/auth';
 import { InsightGenerator } from '../services/ai/insightGenerator';
 import { isValidCsrfToken } from '../middleware/csrf';
+import { aiLimiter } from '../middleware/rateLimiter';
+
+// CWE-770: In-controller rate limit tracking for AI analysis endpoints to prevent resource exhaustion
+const aiRateLimitMap = new Map<string, { count: number; windowStart: number }>();
+const AI_RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const AI_MAX_REQUESTS_PER_WINDOW = 30; // max 30 AI analysis requests per minute
 
 export class AIController {
-  // CWE-639: Enforce strict IDOR authorization without hardcoded fallback student identifiers
+  // Rate limiter reference for AI analysis endpoints (CWE-770)
+  public static readonly aiLimiter = aiLimiter;
+
+  // CWE-639 & CWE-770: Enforce strict IDOR authorization and AI analysis rate limiting
   private static resolveStudentId(req: AuthRequest): { studentId?: string; error?: string; status?: number } {
     if (!req.user) {
       return { error: 'Authentication required.', status: 401 };
+    }
+
+    // CWE-770: Enforce rate limiting on AI analysis endpoints
+    const rawIp = req.ip || req.socket?.remoteAddress || '127.0.0.1';
+    const clientIp = Array.isArray(rawIp) ? rawIp[0] : String(rawIp).split(',')[0].trim();
+    const rateLimitKey = `${clientIp}:${req.user.id}`;
+    const now = Date.now();
+    const record = aiRateLimitMap.get(rateLimitKey);
+
+    if (record) {
+      if (now - record.windowStart < AI_RATE_LIMIT_WINDOW_MS) {
+        if (record.count >= AI_MAX_REQUESTS_PER_WINDOW) {
+          return { error: 'Too many AI analysis requests. Please try again later.', status: 429 };
+        }
+        record.count++;
+      } else {
+        aiRateLimitMap.set(rateLimitKey, { count: 1, windowStart: now });
+      }
+    } else {
+      aiRateLimitMap.set(rateLimitKey, { count: 1, windowStart: now });
     }
 
     if (req.user.role === 'STUDENT') {

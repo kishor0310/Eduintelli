@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { app } from '../../backend/src/app';
 import { config } from '../../backend/src/config';
 import { initializeDatabase } from '../../backend/src/database/seedRunner';
+import { generateCsrfToken } from '../../backend/src/middleware/csrf';
 
 async function runSecurityTests() {
   console.log('🔒 Running Full 19-Point Comprehensive Security Verification Suite...');
@@ -176,7 +177,7 @@ async function runSecurityTests() {
   }
 
   // 12. Rate Limiting headers on Auth (CWE-770 & CWE-400)
-  const validCsrf = 'a0b1c2d3-e4f5-4678-8901-abcdef012345';
+  const validCsrf = generateCsrfToken();
   const res12 = await fetch(baseUrl + '/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': validCsrf },
@@ -333,7 +334,7 @@ async function runSecurityTests() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': 'test-token',
+      'X-CSRF-Token': validCsrf,
     },
     body: JSON.stringify({
       name: 'Malicious Admin',
@@ -405,7 +406,7 @@ async function runSecurityTests() {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + teacherToken,
-      'X-CSRF-Token': 'test-token'
+      'X-CSRF-Token': validCsrf
     }
   });
   if (res30.status === 403) {

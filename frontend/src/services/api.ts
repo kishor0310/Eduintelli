@@ -1,7 +1,7 @@
 const API_BASE = '/api';
 
 // Retrieve dynamic anti-CSRF token (prevents static token bypass - CWE-352)
-function getCsrfToken(): string {
+export function getCsrfToken(): string {
   if (typeof document !== 'undefined') {
     const cookieMatch = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
     if (cookieMatch && cookieMatch[1]) {
@@ -9,16 +9,32 @@ function getCsrfToken(): string {
     }
   }
   if (typeof window !== 'undefined' && window.sessionStorage) {
-    let token = window.sessionStorage.getItem('eduintelli_csrf_token');
-    if (!token) {
-      token = (window.crypto && window.crypto.randomUUID)
-        ? window.crypto.randomUUID()
-        : Math.random().toString(36).substring(2) + Date.now().toString(36);
-      window.sessionStorage.setItem('eduintelli_csrf_token', token);
-    }
-    return token;
+    const token = window.sessionStorage.getItem('eduintelli_csrf_token');
+    if (token) return token;
   }
   return '';
+}
+
+export async function fetchCsrfToken(): Promise<string> {
+  const currentToken = getCsrfToken();
+  if (currentToken && currentToken.includes('.')) {
+    return currentToken;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/auth/csrf-token`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.csrfToken) {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.setItem('eduintelli_csrf_token', data.csrfToken);
+        }
+        return data.csrfToken;
+      }
+    }
+  } catch {
+    // ignore fetch error
+  }
+  return currentToken;
 }
 
 export async function apiRequest<T = any>(
@@ -26,7 +42,14 @@ export async function apiRequest<T = any>(
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; [key: string]: any }> {
   const token = localStorage.getItem('eduintelli_token');
-  const csrfToken = getCsrfToken();
+  let csrfToken = getCsrfToken();
+  if (!csrfToken || !csrfToken.includes('.')) {
+    try {
+      csrfToken = await fetchCsrfToken();
+    } catch {
+      // fallback
+    }
+  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

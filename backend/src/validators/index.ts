@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  csrf_token: z.string().optional(),
+  _csrf: z.string().optional(),
 });
 
 export const registerSchema = z.object({
@@ -13,6 +15,8 @@ export const registerSchema = z.object({
   role: z.literal('STUDENT').default('STUDENT'),
   department: z.string().min(2, 'Department is required'),
   rollNumber: z.string().optional(),
+  csrf_token: z.string().optional(),
+  _csrf: z.string().optional(),
 });
 
 export const markAttendanceSchema = z.object({

@@ -5,22 +5,79 @@ import { db } from '../database/db';
 import { config } from '../config';
 import { loginSchema, registerSchema } from '../validators';
 import { AuthRequest } from '../middleware/auth';
+import { authLimiter } from '../middleware/rateLimiter';
+import { isValidCsrfToken } from '../middleware/csrf';
+
+// CWE-307: In-controller failed login attempt tracker to prevent brute force & credential stuffing attacks
+const loginAttemptsMap = new Map<string, { count: number; firstAttempt: number }>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 export class AuthController {
+  // Rate limiter reference for login endpoint (CWE-307)
+  public static readonly loginLimiter = authLimiter;
+
+  private static recordFailedAttempt(clientIp: string): number {
+    const now = Date.now();
+    const record = loginAttemptsMap.get(clientIp);
+    if (!record || now - record.firstAttempt >= LOGIN_LOCKOUT_MS) {
+      loginAttemptsMap.set(clientIp, { count: 1, firstAttempt: now });
+      return 1;
+    }
+    record.count += 1;
+    return record.count;
+  }
+
   public static async login(req: Request, res: Response, next: NextFunction) {
     try {
+      const rawIp = req.ip || req.socket?.remoteAddress || '127.0.0.1';
+      const clientIp = Array.isArray(rawIp) ? rawIp[0] : String(rawIp).split(',')[0].trim();
+
+      // CWE-307: Rate limiting check on login endpoint - block if brute force threshold reached
+      const activeRecord = loginAttemptsMap.get(clientIp);
+      if (activeRecord) {
+        if (Date.now() - activeRecord.firstAttempt < LOGIN_LOCKOUT_MS) {
+          if (activeRecord.count >= MAX_LOGIN_ATTEMPTS) {
+            return res.status(429).json({
+              success: false,
+              message: 'Too many authentication attempts. Please try again after 15 minutes.',
+            });
+          }
+        } else {
+          loginAttemptsMap.delete(clientIp);
+        }
+      }
+
       const { email, password } = loginSchema.parse(req.body);
 
       const user = await db.get<any>('SELECT * FROM users WHERE email = $1', [email]);
       if (!user) {
+        const attempts = AuthController.recordFailedAttempt(clientIp);
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          return res.status(429).json({
+            success: false,
+            message: 'Too many authentication attempts. Please try again after 15 minutes.',
+          });
+        }
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
       // Remove demo back‑door; only allow bcrypt verification
       const isMatch = await bcrypt.compare(password, user.password_hash || '');
       if (!isMatch) {
+        // CWE-307: Record failed attempt and enforce rate limit lockout after 5 attempts
+        const attempts = AuthController.recordFailedAttempt(clientIp);
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+          return res.status(429).json({
+            success: false,
+            message: 'Too many authentication attempts. Please try again after 15 minutes.',
+          });
+        }
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
+
+      // Reset failed attempts on successful login
+      loginAttemptsMap.delete(clientIp);
 
       // Find role-specific profile ID
       let studentId = undefined;
@@ -74,6 +131,18 @@ export class AuthController {
 
   public static async register(req: Request, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Enforce anti-CSRF token verification on user registration
+      const csrfToken =
+        req.headers['x-csrf-token'] ||
+        req.headers['xsrf-token'] ||
+        (req.body && (req.body.csrf_token || req.body._csrf));
+      if (!csrfToken || !isValidCsrfToken(csrfToken, req)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Valid anti-CSRF token required for registration.',
+        });
+      }
+
       // CWE-285: Enforce strict role authorization on registration to prevent vertical privilege escalation
       if (req.body.role && req.body.role !== 'STUDENT') {
         return res.status(403).json({

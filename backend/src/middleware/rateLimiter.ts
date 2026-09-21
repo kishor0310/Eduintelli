@@ -12,10 +12,9 @@ export const authLimiter = rateLimit({
   requestPropertyName: 'authRateLimit',
   validate: false,
   keyGenerator: (req) => {
-    const rawIp = req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
-    const cleanIp = Array.isArray(rawIp) ? rawIp[0] : String(rawIp).split(',')[0].trim();
-    const email = req.body && req.body.email ? String(req.body.email).toLowerCase().trim() : '';
-    return email ? `${cleanIp}:${email}` : cleanIp;
+    // CWE-307: Key strictly on client IP to prevent rate limit bypass via email variation
+    const rawIp = req.ip || req.socket?.remoteAddress || '127.0.0.1';
+    return Array.isArray(rawIp) ? rawIp[0] : String(rawIp).split(',')[0].trim();
   },
   message: {
     success: false,
@@ -60,17 +59,20 @@ export const attendanceLimiter = rateLimit({
   },
 });
 
-// AI Risk calculation rate limiter (prevents resource exhaustion - CWE-400 / CWE-770)
-export const riskLimiter = rateLimit({
+// AI Risk & analysis calculation rate limiter (prevents resource exhaustion - CWE-400 / CWE-770)
+export const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
+  statusCode: 429,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message: "Too many requests, please try again later.",
+    message: 'Too many requests, please try again later.',
   },
 });
+
+export const riskLimiter = aiLimiter;
 
 // Assignment listing rate limiter (CWE-770)
 export const assignmentLimiter = rateLimit({
