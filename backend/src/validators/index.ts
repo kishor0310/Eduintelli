@@ -9,11 +9,10 @@ export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  // CWE-285: Restrict self-registration to non-administrative roles
-  role: z.enum(['STUDENT', 'TEACHER']).default('STUDENT'),
+  // CWE-285: Restrict self-registration strictly to STUDENT role
+  role: z.literal('STUDENT').default('STUDENT'),
   department: z.string().min(2, 'Department is required'),
   rollNumber: z.string().optional(),
-  employeeId: z.string().optional(),
 });
 
 export const markAttendanceSchema = z.object({

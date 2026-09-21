@@ -29,7 +29,7 @@ export const RegisterPage: React.FC = () => {
           name,
           email,
           password,
-          role,
+          role: 'STUDENT',
           department,
           rollNumber: rollNumber || `CS2025-${Math.floor(100 + Math.random() * 900)}`,
         }),
@@ -42,8 +42,7 @@ export const RegisterPage: React.FC = () => {
 
       toast.success('Registration Successful', 'Your academic account is now active.');
       await login(email, password);
-      if (role === 'STUDENT') navigate('/student/dashboard');
-      else navigate('/teacher/dashboard');
+      navigate('/student/dashboard');
     } catch (err: any) {
       toast.error('Registration Failed', err.message);
     } finally {
@@ -66,33 +65,16 @@ export const RegisterPage: React.FC = () => {
 
         <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-            {/* Role Switcher */}
+            {/* Account Type */}
             <div>
-              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Select Role</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRole('STUDENT')}
-                  className={`p-2.5 rounded-xl border font-bold transition-all ${
-                    role === 'STUDENT'
-                      ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-white'
-                      : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 text-slate-500 dark:text-slate-400'
-                  }`}
-                >
-                  Student
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('TEACHER')}
-                  className={`p-2.5 rounded-xl border font-bold transition-all ${
-                    role === 'TEACHER'
-                      ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-white'
-                      : 'border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 text-slate-500 dark:text-slate-400'
-                  }`}
-                >
-                  Teacher / Faculty
-                </button>
+              <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Account Type</label>
+              <div className="p-2.5 rounded-xl border border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-white font-bold flex items-center justify-between">
+                <span>Student Account</span>
+                <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300">Self-Registration</span>
               </div>
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                Faculty & administrative accounts are provisioned by institutional administrators.
+              </p>
             </div>
 
             <div>

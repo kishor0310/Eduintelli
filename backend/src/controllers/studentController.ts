@@ -16,7 +16,12 @@ export class StudentController {
         }
         studentId = req.user.studentId;
       }
-      studentId = studentId || 'std-01';
+      if (!studentId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Student profile identifier is required.',
+        });
+      }
 
       // 1. Run AI Intelligence Pipeline
       const aiAnalysis = await AIService.analyzeStudent(studentId);
@@ -155,7 +160,12 @@ export class StudentController {
         }
         studentId = req.user.studentId;
       }
-      studentId = studentId || 'std-01';
+      if (!studentId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Student profile identifier is required.',
+        });
+      }
 
       const schedule = await db.query<any>(
         `SELECT cl.id, cl.section, cl.room_number, cl.day_of_week, cl.start_time, cl.end_time,

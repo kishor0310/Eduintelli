@@ -513,8 +513,54 @@ async function runSecurityTests() {
     throw new Error(`Expected 401 unauth and 200 auth for assignment retrieval, got ${res38Unauth.status} and ${res38Auth.status}`);
   }
 
+  // 39. Unrestricted role assignment blocked on registration (CWE-285)
+  const res39 = await fetch(baseUrl + '/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({
+      name: 'Rogue Faculty',
+      email: 'rogue_faculty_' + Date.now() + '@test.com',
+      password: 'password123',
+      role: 'TEACHER',
+      department: 'Computer Science'
+    })
+  });
+  if (res39.status === 403) {
+    console.log('✅ 39. Unrestricted role assignment (TEACHER) rejected during registration (403 Forbidden - CWE-285)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on self-registering as TEACHER, got ' + res39.status);
+  }
+
+  // 40. AI risk access without valid student profile rejected without hardcoded fallback (CWE-639)
+  // Teacher token has no studentId; calling /ai/risk should return 400/403, NOT fall back to std-01
+  const res40 = await fetch(baseUrl + '/ai/risk', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res40.status === 400 || res40.status === 403) {
+    console.log('✅ 40. AI risk access rejected without hardcoded fallback std-01 (' + res40.status + ' - CWE-639)');
+    passed++;
+  } else {
+    throw new Error('Expected 400/403 for AI risk without student profile, got ' + res40.status);
+  }
+
+  // 41. Attendance access without valid student profile rejected without hardcoded fallback (CWE-639)
+  // Teacher token has no studentId; calling /attendance/student should return 400/403, NOT fall back to std-01
+  const res41 = await fetch(baseUrl + '/attendance/student', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res41.status === 400 || res41.status === 403) {
+    console.log('✅ 41. Attendance access rejected without hardcoded fallback std-01 (' + res41.status + ' - CWE-639)');
+    passed++;
+  } else {
+    throw new Error('Expected 400/403 for attendance without student profile, got ' + res41.status);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/38 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/41 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

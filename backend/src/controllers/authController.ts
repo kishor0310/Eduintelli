@@ -85,16 +85,16 @@ export class AuthController {
 
   public static async register(req: Request, res: Response, next: NextFunction) {
     try {
-      // CWE-285: Enforce strict role authorization check on registration to prevent vertical privilege escalation
-      if (req.body.role === 'ADMIN' || (req.body.role && !['STUDENT', 'TEACHER'].includes(req.body.role))) {
+      // CWE-285: Enforce strict role authorization on registration to prevent vertical privilege escalation
+      if (req.body.role && req.body.role !== 'STUDENT') {
         return res.status(403).json({
           success: false,
-          message: 'Forbidden: Self-registration with administrative privileges is prohibited.',
+          message: 'Forbidden: Self-registration with elevated privileges (TEACHER, ADMIN) is prohibited. Faculty accounts must be provisioned by administrators.',
         });
       }
 
       const data = registerSchema.parse(req.body);
-      const assignedRole: 'STUDENT' | 'TEACHER' = data.role === 'TEACHER' ? 'TEACHER' : 'STUDENT';
+      const assignedRole: 'STUDENT' = 'STUDENT';
 
       const existingUser = await db.get<any>('SELECT id FROM users WHERE email = $1', [data.email]);
       if (existingUser) {
@@ -105,30 +105,19 @@ export class AuthController {
       const passwordHash = await bcrypt.hash(data.password, salt);
       const userId = `usr-${Date.now()}`;
 
+      // CWE-285 Protection: Strictly enforce hardcoded STUDENT role in database insert
       await db.run(
         `INSERT INTO users (id, name, email, password_hash, role, status)
-         VALUES ($1, $2, $3, $4, $5, 'ACTIVE')`,
-        [userId, data.name, data.email, passwordHash, assignedRole]
+         VALUES ($1, $2, $3, $4, 'STUDENT', 'ACTIVE')`,
+        [userId, data.name, data.email, passwordHash]
       );
 
-      let studentId = undefined;
-      let teacherId = undefined;
-
-      if (assignedRole === 'STUDENT') {
-        studentId = `std-${Date.now()}`;
-        await db.run(
-          `INSERT INTO students (id, user_id, roll_number, department, semester, batch, cgpa, academic_risk_score, risk_level)
-           VALUES ($1, $2, $3, $4, 1, '2024-2028', 3.5, 10, 'LOW')`,
-          [studentId, userId, data.rollNumber || `CS2024-${Math.floor(100 + Math.random() * 900)}`, data.department]
-        );
-      } else if (assignedRole === 'TEACHER') {
-        teacherId = `tch-${Date.now()}`;
-        await db.run(
-          `INSERT INTO teachers (id, user_id, employee_id, department, designation)
-           VALUES ($1, $2, $3, $4, 'Assistant Professor')`,
-          [teacherId, userId, data.employeeId || `FAC-${Math.floor(100 + Math.random() * 900)}`, data.department]
-        );
-      }
+      const studentId = `std-${Date.now()}`;
+      await db.run(
+        `INSERT INTO students (id, user_id, roll_number, department, semester, batch, cgpa, academic_risk_score, risk_level)
+         VALUES ($1, $2, $3, $4, 1, '2024-2028', 3.5, 10, 'LOW')`,
+        [studentId, userId, data.rollNumber || `CS2024-${Math.floor(100 + Math.random() * 900)}`, data.department]
+      );
 
       const token = jwt.sign(
         {
@@ -137,7 +126,6 @@ export class AuthController {
           role: assignedRole,
           name: data.name,
           studentId,
-          teacherId,
         },
         config.jwtSecret,
         { expiresIn: '7d' }
@@ -153,7 +141,6 @@ export class AuthController {
           email: data.email,
           role: assignedRole,
           studentId,
-          teacherId,
         },
       });
     } catch (error) {

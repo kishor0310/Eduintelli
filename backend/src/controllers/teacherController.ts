@@ -23,7 +23,12 @@ export class TeacherController {
         }
         teacherId = req.user.teacherId;
       }
-      teacherId = teacherId || 'tch-01';
+      if (!teacherId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Teacher profile identifier is required.',
+        });
+      }
 
       // 1. Fetch Teacher Profile
       const teacher = await db.get<any>(

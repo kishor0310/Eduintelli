@@ -24,7 +24,14 @@ export class AttendanceController {
           });
         }
       }
-      studentId = studentId || 'std-01';
+
+      // CWE-639 IDOR Protection: Strictly require authenticated student profile without hardcoded fallback
+      if (!studentId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Student profile identifier is required to view attendance records.',
+        });
+      }
 
       // 1. Fetch Subject-wise summary
       const subjectSummary = await db.query<any>(

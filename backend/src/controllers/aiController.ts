@@ -4,28 +4,44 @@ import { AuthRequest } from '../middleware/auth';
 import { InsightGenerator } from '../services/ai/insightGenerator';
 
 export class AIController {
-  private static resolveStudentId(req: AuthRequest): { studentId?: string; error?: string } {
-    if (req.user?.role === 'STUDENT') {
+  // CWE-639: Enforce strict IDOR authorization without hardcoded fallback student identifiers
+  private static resolveStudentId(req: AuthRequest): { studentId?: string; error?: string; status?: number } {
+    if (!req.user) {
+      return { error: 'Authentication required.', status: 401 };
+    }
+
+    if (req.user.role === 'STUDENT') {
+      if (!req.user.studentId) {
+        return { error: 'Forbidden: No student profile associated with this account.', status: 403 };
+      }
       if (req.params.studentId && req.params.studentId !== req.user.studentId) {
-        return { error: 'Forbidden: Students can only access their own AI risk analysis.' };
+        return { error: 'Forbidden: Students can only access their own AI risk analysis.', status: 403 };
       }
-      return { studentId: req.user.studentId || 'std-01' };
+      return { studentId: req.user.studentId };
     }
-    if (req.user?.role === 'TEACHER') {
-      // Teachers must not request arbitrary student data; enforce relationship check or deny
+
+    if (req.user.role === 'TEACHER') {
+      // Teachers must not request arbitrary student data without verified course enrollment
       if (req.params.studentId) {
-        return { error: 'Forbidden: Teachers cannot access arbitrary student AI analysis.' };
+        return { error: 'Forbidden: Teachers cannot access arbitrary student AI analysis.', status: 403 };
+      }
+      if (!req.user.studentId) {
+        return { error: 'Student ID required.', status: 400 };
       }
     }
-    const studentId = req.params.studentId || req.user?.studentId || 'std-01';
+
+    const studentId = req.params.studentId || req.user.studentId;
+    if (!studentId) {
+      return { error: 'Student profile identifier is required.', status: 400 };
+    }
     return { studentId };
   }
 
   public static async getStudentRisk(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { studentId, error } = AIController.resolveStudentId(req);
+      const { studentId, error, status } = AIController.resolveStudentId(req);
       if (error) {
-        return res.status(403).json({ success: false, message: error });
+        return res.status(status || 403).json({ success: false, message: error });
       }
 
       const analysis = await AIService.analyzeStudent(studentId!);
@@ -45,9 +61,9 @@ export class AIController {
 
   public static async getStudentRecommendations(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { studentId, error } = AIController.resolveStudentId(req);
+      const { studentId, error, status } = AIController.resolveStudentId(req);
       if (error) {
-        return res.status(403).json({ success: false, message: error });
+        return res.status(status || 403).json({ success: false, message: error });
       }
 
       const analysis = await AIService.analyzeStudent(studentId!);
@@ -64,9 +80,9 @@ export class AIController {
 
   public static async getStudentInsights(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { studentId, error } = AIController.resolveStudentId(req);
+      const { studentId, error, status } = AIController.resolveStudentId(req);
       if (error) {
-        return res.status(403).json({ success: false, message: error });
+        return res.status(status || 403).json({ success: false, message: error });
       }
 
       const analysis = await AIService.analyzeStudent(studentId!);
@@ -106,8 +122,15 @@ export class AIController {
         });
       }
 
+      const studentId = req.user?.studentId;
+      if (!studentId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Only enrolled students can consult the AI coach.',
+        });
+      }
+
       const { question } = req.body;
-      const studentId = req.user?.studentId || 'std-01';
 
       const analysis = await AIService.analyzeStudent(studentId);
       const promptContext = `Student Risk Score: ${analysis.risk.riskScore}/100.
