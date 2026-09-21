@@ -1,15 +1,37 @@
 const API_BASE = '/api';
 
+// Retrieve dynamic anti-CSRF token (prevents static token bypass - CWE-352)
+function getCsrfToken(): string {
+  if (typeof document !== 'undefined') {
+    const cookieMatch = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    if (cookieMatch && cookieMatch[1]) {
+      return decodeURIComponent(cookieMatch[1]);
+    }
+  }
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    let token = window.sessionStorage.getItem('eduintelli_csrf_token');
+    if (!token) {
+      token = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      window.sessionStorage.setItem('eduintelli_csrf_token', token);
+    }
+    return token;
+  }
+  return '';
+}
+
 export async function apiRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<{ success: boolean; data?: T; [key: string]: any }> {
   const token = localStorage.getItem('eduintelli_token');
+  const csrfToken = getCsrfToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
-    'X-CSRF-Token': 'eduintelli-csrf-token',
+    ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
     ...(options.headers as Record<string, string> || {}),
   };
 

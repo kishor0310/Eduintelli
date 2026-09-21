@@ -70,6 +70,27 @@ export class CourseController {
         return res.status(404).json({ success: false, message: 'Course not found' });
       }
 
+      // CWE-639 IDOR Protection: Enforce object-level authorization for course inspection
+      if (req.user.role === 'STUDENT' && req.user.studentId) {
+        const isEnrolled = await db.get<any>(
+          'SELECT id FROM enrollments WHERE student_id = $1 AND course_id = $2',
+          [req.user.studentId, id]
+        );
+        if (!isEnrolled) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Students can only view course details for enrolled courses.',
+          });
+        }
+      } else if (req.user.role === 'TEACHER' && req.user.teacherId) {
+        if (course.teacher_id && course.teacher_id !== req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty can only inspect course details for courses they instruct.',
+          });
+        }
+      }
+
       // Fetch Schedules
       const classes = await db.query<any>(
         `SELECT * FROM classes WHERE course_id = $1 ORDER BY day_of_week, start_time`,

@@ -408,8 +408,62 @@ async function runSecurityTests() {
     throw new Error('Expected 403 on course enroll for teacher, got ' + res30.status);
   }
 
+  // 31. CSRF Protection on assignment submission (CWE-352)
+  const res31 = await fetch(baseUrl + '/assignments/submit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // Missing CSRF token and auth header
+    },
+    body: JSON.stringify({ assignmentId: 'asg-01' })
+  });
+  if (res31.status === 403 || res31.status === 401) {
+    console.log('✅ 31. Assignment submission without CSRF/auth rejected (' + res31.status + ' - CWE-352)');
+    passed++;
+  } else {
+    throw new Error('Expected 403/401 on unauthenticated CSRF submission, got ' + res31.status);
+  }
+
+  // 32. CSRF Protection on assignment grading (CWE-352)
+  const res32 = await fetch(baseUrl + '/assignments/grade', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // Missing CSRF token and auth header
+    },
+    body: JSON.stringify({ submissionId: 'sub-01', score: 95 })
+  });
+  if (res32.status === 403 || res32.status === 401) {
+    console.log('✅ 32. Assignment grading without CSRF/auth rejected (' + res32.status + ' - CWE-352)');
+    passed++;
+  } else {
+    throw new Error('Expected 403/401 on unauthenticated CSRF grading, got ' + res32.status);
+  }
+
+  // 33. Enrolled student can inspect their own course details
+  const res33 = await fetch(baseUrl + '/courses/crs-01', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  if (res33.status === 200) {
+    console.log('✅ 33. Enrolled student successfully accesses course crs-01 details (200 OK)');
+    passed++;
+  } else {
+    throw new Error('Expected 200 on enrolled course access, got ' + res33.status);
+  }
+
+  // 34. Non-enrolled student blocked from accessing course details (CWE-639 IDOR)
+  const res34 = await fetch(baseUrl + '/courses/crs-06', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  if (res34.status === 403) {
+    console.log('✅ 34. Non-enrolled student blocked from accessing course crs-06 details (403 Forbidden - CWE-639 IDOR)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on course detail IDOR, got ' + res34.status);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/30 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/34 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

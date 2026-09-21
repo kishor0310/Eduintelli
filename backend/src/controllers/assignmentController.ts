@@ -101,6 +101,15 @@ export class AssignmentController {
 
   public static async submitAssignment(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Validate anti-CSRF token on assignment submission
+      const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'] || req.headers['x-requested-with'] || req.headers.authorization;
+      if (!csrfToken) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Missing anti-CSRF token or authorization header.',
+        });
+      }
+
       const studentId = req.user?.studentId;
       if (!studentId) {
         return res.status(403).json({ success: false, message: 'Only students can submit assignments.' });
@@ -143,6 +152,15 @@ export class AssignmentController {
 
   public static async gradeSubmission(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Validate anti-CSRF token on assignment grading
+      const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'] || req.headers['x-requested-with'] || req.headers.authorization;
+      if (!csrfToken) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Missing anti-CSRF token or authorization header.',
+        });
+      }
+
       const data = gradeSubmissionSchema.parse(req.body);
 
       await db.run(

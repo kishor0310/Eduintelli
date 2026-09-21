@@ -48,7 +48,69 @@ export function authorize(allowedRoles: UserRole[]) {
   };
 }
 
+import { db } from '../database/db';
+
 export const authorizeAdmin = authorize(['ADMIN']);
 export const authorizeTeacher = authorize(['TEACHER', 'ADMIN']);
 export const authorizeStudent = authorize(['STUDENT', 'ADMIN']);
+
+/**
+ * Authorize Course Access (CWE-639 IDOR Prevention)
+ * Enforces object-level authorization for course detail endpoints.
+ * Verifies that students are enrolled in the course, teachers instruct the course, or users are administrators.
+ */
+export async function authorizeCourseAccess(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Authentication required.' });
+  }
+
+  const courseId = req.params.id || req.params.courseId;
+  if (!courseId) {
+    return next();
+  }
+
+  // Administrators have universal authorization
+  if (req.user.role === 'ADMIN') {
+    return next();
+  }
+
+  // Verify course existence
+  const course = await db.get<any>('SELECT id, teacher_id FROM courses WHERE id = $1', [courseId]);
+  if (!course) {
+    return res.status(404).json({ success: false, message: 'Course not found.' });
+  }
+
+  // Students must be enrolled in the course to access course details (IDOR protection - CWE-639)
+  if (req.user.role === 'STUDENT') {
+    const studentId = req.user.studentId;
+    if (!studentId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: No student profile associated.' });
+    }
+    const enrollment = await db.get<any>(
+      'SELECT id FROM enrollments WHERE student_id = $1 AND course_id = $2',
+      [studentId, courseId]
+    );
+    if (!enrollment) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You can only access details for courses in which you are enrolled.',
+      });
+    }
+    return next();
+  }
+
+  // Faculty must be the instructor of the course (IDOR protection - CWE-639)
+  if (req.user.role === 'TEACHER') {
+    const teacherId = req.user.teacherId;
+    if (course.teacher_id && teacherId && course.teacher_id !== teacherId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Faculty can only inspect course details for courses they instruct.',
+      });
+    }
+    return next();
+  }
+
+  next();
+}
 

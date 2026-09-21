@@ -12,9 +12,9 @@ router.get('/', authenticate, assignmentLimiter, AssignmentController.getAssignm
 // CSRF-protected assignment creation (CWE-352)
 router.post('/', authenticate, authorizeTeacher, csrfProtection, AssignmentController.createAssignment);
 
-// Rate-limited assignment submissions (CWE-770)
-router.post('/submit', authenticate, submissionLimiter, AssignmentController.submitAssignment);
-router.post('/grade', authenticate, authorizeTeacher, submissionLimiter, AssignmentController.gradeSubmission);
+// Rate-limited & CSRF-protected assignment submissions (CWE-770 & CWE-352)
+router.post('/submit', authenticate, csrfProtection, submissionLimiter, AssignmentController.submitAssignment);
+router.post('/grade', authenticate, authorizeTeacher, csrfProtection, submissionLimiter, AssignmentController.gradeSubmission);
 
 router.get('/:assignmentId/submissions', authenticate, authorizeTeacher, assignmentLimiter, AssignmentController.getSubmissionsForAssignment);
 
