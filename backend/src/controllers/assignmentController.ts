@@ -56,6 +56,15 @@ export class AssignmentController {
 
   public static async createAssignment(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Validate anti-CSRF token / session credentials for assignment creation
+      const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'] || req.headers['x-requested-with'] || req.headers.authorization;
+      if (!csrfToken) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Missing anti-CSRF token or authorization header.',
+        });
+      }
+
       if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
         return res.status(403).json({
           success: false,

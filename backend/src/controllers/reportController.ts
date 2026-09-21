@@ -6,8 +6,13 @@ import { AIService } from '../services/ai/aiService';
 export class ReportController {
   public static async getStudentPerformanceReport(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
       let studentId = req.params.studentId || req.user?.studentId;
-      if (req.user?.role === 'STUDENT') {
+
+      if (req.user.role === 'STUDENT') {
         if (req.params.studentId && req.params.studentId !== req.user.studentId) {
           return res.status(403).json({
             success: false,
@@ -15,8 +20,31 @@ export class ReportController {
           });
         }
         studentId = req.user.studentId;
+      } else if (req.user.role === 'TEACHER') {
+        studentId = req.params.studentId;
+        if (!studentId) {
+          return res.status(400).json({ success: false, message: 'Student ID required for faculty performance review.' });
+        }
+        // Verify teacher instructs at least one course this student is enrolled in
+        if (req.user.teacherId) {
+          const common = await db.get<any>(
+            `SELECT 1 FROM enrollments e
+             JOIN courses c ON e.course_id = c.id
+             WHERE e.student_id = $1 AND c.teacher_id = $2`,
+            [studentId, req.user.teacherId]
+          );
+          if (!common) {
+            return res.status(403).json({
+              success: false,
+              message: 'Forbidden: Faculty can only inspect performance reports for students enrolled in their courses.',
+            });
+          }
+        }
       }
-      studentId = studentId || 'std-01';
+
+      if (!studentId) {
+        return res.status(400).json({ success: false, message: 'Student ID required.' });
+      }
 
       // 1. Run AI analysis
       const ai = await AIService.analyzeStudent(studentId);

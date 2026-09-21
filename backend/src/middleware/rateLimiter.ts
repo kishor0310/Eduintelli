@@ -47,3 +47,28 @@ export const riskLimiter = rateLimit({
     message: "Too many requests, please try again later.",
   },
 });
+
+// Assignment listing rate limiter (CWE-770)
+export const assignmentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many assignment listing requests. Please try again later.',
+  },
+});
+
+// Assignment submission and grading rate limiter (prevents automated spam/exhaustion - CWE-770)
+export const submissionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many submission requests. Please wait a few minutes before submitting again.',
+  },
+});
+

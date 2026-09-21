@@ -3,6 +3,7 @@ import cors from 'cors';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { generalLimiter } from './middleware/rateLimiter';
+import { csrfProtection } from './middleware/csrf';
 import { config } from './config';
 
 export const app = express();
@@ -33,6 +34,9 @@ app.use(cors({
 
 // Global Rate Limiter to protect against resource exhaustion (CWE-400)
 app.use(generalLimiter);
+
+// CSRF Protection Middleware applied globally to state-modifying requests (CWE-352)
+app.use(csrfProtection);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -321,8 +321,95 @@ async function runSecurityTests() {
     throw new Error('Reports endpoint missing rate limiting header');
   }
 
+  // 25. Privilege Escalation Prevention on Registration (CWE-285)
+  const res25 = await fetch(baseUrl + '/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': 'test-token',
+    },
+    body: JSON.stringify({
+      name: 'Malicious Admin',
+      email: 'hacked_admin_' + Date.now() + '@test.com',
+      password: 'password123',
+      role: 'ADMIN',
+      department: 'Computer Science'
+    })
+  });
+  if (res25.status === 403) {
+    console.log('✅ 25. Self-registration as ADMIN rejected (403 Forbidden - CWE-285)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on register with ADMIN role, got ' + res25.status);
+  }
+
+  // 26. CSRF Protection without token or auth header (CWE-352)
+  const res26 = await fetch(baseUrl + '/assignments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ title: 'Cross site forged assignment' })
+  });
+  if (res26.status === 403) {
+    console.log('✅ 26. Assignment creation without CSRF token/auth rejected (403 Forbidden - CWE-352)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on CSRF violation, got ' + res26.status);
+  }
+
+  // 27. Rate limiting active on AI recommendations (CWE-770)
+  const res27 = await fetch(baseUrl + '/ai/recommendations', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const recRemaining = res27.headers.get('ratelimit-remaining') || res27.headers.get('x-ratelimit-remaining');
+  if (recRemaining !== null) {
+    console.log('✅ 27. AI recommendations rate limiter active (Remaining: ' + recRemaining + ' - CWE-770)');
+    passed++;
+  } else {
+    throw new Error('Expected rate limiting header on /ai/recommendations');
+  }
+
+  // 28. Rate limiting active on assignment listing (CWE-770)
+  const res28 = await fetch(baseUrl + '/assignments', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const asgRemaining = res28.headers.get('ratelimit-remaining') || res28.headers.get('x-ratelimit-remaining');
+  if (asgRemaining !== null) {
+    console.log('✅ 28. Assignment listing rate limiter active (Remaining: ' + asgRemaining + ' - CWE-770)');
+    passed++;
+  } else {
+    throw new Error('Expected rate limiting header on /assignments');
+  }
+
+  // 29. IDOR protection on course attendance endpoint (CWE-639)
+  const res29 = await fetch(baseUrl + '/attendance/course/crs-01', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  if (res29.status === 403) {
+    console.log('✅ 29. Student blocked from accessing course attendance roster (403 Forbidden - CWE-639)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on course attendance IDOR for student, got ' + res29.status);
+  }
+
+  // 30. IDOR protection on course enrollment endpoint (CWE-639)
+  const res30 = await fetch(baseUrl + '/courses/crs-02/enroll', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + teacherToken,
+      'X-CSRF-Token': 'test-token'
+    }
+  });
+  if (res30.status === 403) {
+    console.log('✅ 30. Non-student blocked from enrolling in course (403 Forbidden - CWE-639)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on course enroll for teacher, got ' + res30.status);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/24 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/30 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

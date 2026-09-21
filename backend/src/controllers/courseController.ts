@@ -47,8 +47,13 @@ export class CourseController {
     }
   }
 
-  public static async getCourseById(req: Request, res: Response, next: NextFunction) {
+  public static async getCourseById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-639: Enforce authentication and authorization for course detail inspection
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
       const { id } = req.params;
 
       const course = await db.get<any>(
@@ -106,12 +111,13 @@ export class CourseController {
 
   public static async enrollInCourse(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const studentId = req.user?.studentId;
-
-      if (!studentId) {
-        return res.status(403).json({ success: false, message: 'Only students can enroll in courses.' });
+      // CWE-639: Strict enrollment authorization - only verified student sessions permitted
+      if (!req.user || req.user.role !== 'STUDENT' || !req.user.studentId) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Only authenticated students can enroll in courses.' });
       }
+
+      const { id } = req.params;
+      const studentId = req.user.studentId;
 
       const existing = await db.get<any>(
         'SELECT id FROM enrollments WHERE student_id = $1 AND course_id = $2',

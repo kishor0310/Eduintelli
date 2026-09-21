@@ -90,8 +90,27 @@ export class AttendanceController {
 
   public static async getCourseAttendance(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-639 IDOR protection: Verify requester is authorized faculty or admin
+      if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Only faculty or administrators can inspect course attendance rosters.',
+        });
+      }
+
       const { courseId } = req.params;
       const { date } = req.query;
+
+      // Ensure teachers can only inspect courses assigned to them
+      if (req.user.role === 'TEACHER' && req.user.teacherId) {
+        const course = await db.get<any>('SELECT teacher_id FROM courses WHERE id = $1', [courseId]);
+        if (course && course.teacher_id !== req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty can only inspect attendance for courses they instruct.',
+          });
+        }
+      }
 
       // Fetch enrolled students for this course
       const students = await db.query<any>(

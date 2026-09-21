@@ -85,7 +85,16 @@ export class AuthController {
 
   public static async register(req: Request, res: Response, next: NextFunction) {
     try {
+      // CWE-285: Enforce strict role authorization check on registration to prevent vertical privilege escalation
+      if (req.body.role === 'ADMIN' || (req.body.role && !['STUDENT', 'TEACHER'].includes(req.body.role))) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Self-registration with administrative privileges is prohibited.',
+        });
+      }
+
       const data = registerSchema.parse(req.body);
+      const assignedRole: 'STUDENT' | 'TEACHER' = data.role === 'TEACHER' ? 'TEACHER' : 'STUDENT';
 
       const existingUser = await db.get<any>('SELECT id FROM users WHERE email = $1', [data.email]);
       if (existingUser) {
@@ -99,20 +108,20 @@ export class AuthController {
       await db.run(
         `INSERT INTO users (id, name, email, password_hash, role, status)
          VALUES ($1, $2, $3, $4, $5, 'ACTIVE')`,
-        [userId, data.name, data.email, passwordHash, data.role]
+        [userId, data.name, data.email, passwordHash, assignedRole]
       );
 
       let studentId = undefined;
       let teacherId = undefined;
 
-      if (data.role === 'STUDENT') {
+      if (assignedRole === 'STUDENT') {
         studentId = `std-${Date.now()}`;
         await db.run(
           `INSERT INTO students (id, user_id, roll_number, department, semester, batch, cgpa, academic_risk_score, risk_level)
            VALUES ($1, $2, $3, $4, 1, '2024-2028', 3.5, 10, 'LOW')`,
           [studentId, userId, data.rollNumber || `CS2024-${Math.floor(100 + Math.random() * 900)}`, data.department]
         );
-      } else if (data.role === 'TEACHER') {
+      } else if (assignedRole === 'TEACHER') {
         teacherId = `tch-${Date.now()}`;
         await db.run(
           `INSERT INTO teachers (id, user_id, employee_id, department, designation)
@@ -125,7 +134,7 @@ export class AuthController {
         {
           id: userId,
           email: data.email,
-          role: data.role,
+          role: assignedRole,
           name: data.name,
           studentId,
           teacherId,
@@ -142,7 +151,7 @@ export class AuthController {
           id: userId,
           name: data.name,
           email: data.email,
-          role: data.role,
+          role: assignedRole,
           studentId,
           teacherId,
         },
