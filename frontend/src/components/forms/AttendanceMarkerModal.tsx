@@ -130,14 +130,14 @@ export const AttendanceMarkerModal: React.FC<AttendanceMarkerModalProps> = ({
     >
       <div className="space-y-4">
         {/* Controls Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-300">Session Date:</span>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Session Date:</span>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="px-3 py-1 text-xs rounded-lg bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
+              className="px-3 py-1 text-xs rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500"
             />
           </div>
 
@@ -153,38 +153,38 @@ export const AttendanceMarkerModal: React.FC<AttendanceMarkerModalProps> = ({
 
         {/* Live Counters */}
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-            <div className="font-bold text-base text-white">{presentCount}</div>
+          <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+            <div className="font-bold text-base text-slate-900 dark:text-white">{presentCount}</div>
             <div>Present</div>
           </div>
-          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
-            <div className="font-bold text-base text-white">{lateCount}</div>
+          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400">
+            <div className="font-bold text-base text-slate-900 dark:text-white">{lateCount}</div>
             <div>Late</div>
           </div>
-          <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
-            <div className="font-bold text-base text-white">{absentCount}</div>
+          <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400">
+            <div className="font-bold text-base text-slate-900 dark:text-white">{absentCount}</div>
             <div>Absent</div>
           </div>
         </div>
 
         {/* Student Roster Table */}
-        <div className="max-h-72 overflow-y-auto custom-scrollbar border border-slate-800 rounded-xl">
+        <div className="max-h-72 overflow-y-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-xl">
           <table className="w-full text-left text-xs">
-            <thead className="sticky top-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+            <thead className="sticky top-0 bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-2.5 px-3">Student</th>
                 <th className="py-2.5 px-3">Risk Level</th>
                 <th className="py-2.5 px-3 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 bg-slate-950/40">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-950/40">
               {students.map((student) => {
                 const currentStatus = statuses[student.student_id] || 'PRESENT';
                 return (
-                  <tr key={student.student_id} className="hover:bg-slate-900/50 transition-colors">
+                  <tr key={student.student_id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                     <td className="py-2.5 px-3">
-                      <div className="font-bold text-white">{student.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{student.roll_number}</div>
+                      <div className="font-bold text-slate-900 dark:text-white">{student.name}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{student.roll_number}</div>
                     </td>
                     <td className="py-2.5 px-3">
                       <Badge
@@ -202,7 +202,7 @@ export const AttendanceMarkerModal: React.FC<AttendanceMarkerModalProps> = ({
                             'px-2 py-1 rounded text-[11px] font-semibold transition-all',
                             currentStatus === 'PRESENT'
                               ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/30'
-                              : 'bg-slate-800 text-slate-400 hover:text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                           )}
                         >
                           Present
@@ -213,7 +213,7 @@ export const AttendanceMarkerModal: React.FC<AttendanceMarkerModalProps> = ({
                             'px-2 py-1 rounded text-[11px] font-semibold transition-all',
                             currentStatus === 'LATE'
                               ? 'bg-amber-500 text-white shadow-sm shadow-amber-500/30'
-                              : 'bg-slate-800 text-slate-400 hover:text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                           )}
                         >
                           Late
@@ -224,7 +224,7 @@ export const AttendanceMarkerModal: React.FC<AttendanceMarkerModalProps> = ({
                             'px-2 py-1 rounded text-[11px] font-semibold transition-all',
                             currentStatus === 'ABSENT'
                               ? 'bg-rose-500 text-white shadow-sm shadow-rose-500/30'
-                              : 'bg-slate-800 text-slate-400 hover:text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                           )}
                         >
                           Absent
@@ -239,7 +239,7 @@ export const AttendanceMarkerModal: React.FC<AttendanceMarkerModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <Button variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

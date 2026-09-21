@@ -8,6 +8,7 @@ import { StatCard } from '../../components/ui/StatCard';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { AssignmentSubmitModal } from '../../components/forms/AssignmentSubmitModal';
 import { AssignmentGradeModal } from '../../components/forms/AssignmentGradeModal';
+import { SpeakButton } from '../../components/voice/SpeakButton';
 import { Assignment } from '../../types';
 import {
   FileCheck2,
@@ -60,27 +61,38 @@ export const AssignmentsPage: React.FC = () => {
   const gradedCount = assignments.filter(a => a.user_submission?.status === 'GRADED').length;
   const lateCount = assignments.filter(a => a.user_submission?.status === 'LATE').length;
 
+  const assignmentsVoiceSummary = `Continuous Assessment Status: You have ${assignments.length} total coursework tasks. ${completedCount} are submitted and ${gradedCount} have been evaluated with feedback. ${
+    lateCount > 0 ? `Notice: You have ${lateCount} overdue or late tasks affecting your risk score.` : 'You have zero late penalty deductions.'
+  }`;
+
   return (
     <div className="space-y-6">
       {/* 1. TOP HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 font-mono">
               Continuous Assessment Workbench
             </span>
             <Badge variant="ai" size="sm">
               Weightage: 20% of Risk Index
             </Badge>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <FileCheck2 className="w-7 h-7 text-purple-400" />
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <FileCheck2 className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             <span>Assignments & Coursework Manager</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
             Submit coursework, track submission deadlines, and review grading rubrics and faculty feedback.
           </p>
         </div>
+
+        <SpeakButton
+          text={assignmentsVoiceSummary}
+          label="Listen to Assignments Status"
+          size="sm"
+          variant="outline"
+        />
       </div>
 
       {/* 2. STATS */}
@@ -112,8 +124,8 @@ export const AssignmentsPage: React.FC = () => {
 
       {/* 3. ASSIGNMENTS LIST */}
       <div className="space-y-4">
-        <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-sky-400" />
+        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-sky-500 dark:text-sky-400" />
           <span>Active Course Assignments</span>
         </h3>
 
@@ -123,26 +135,26 @@ export const AssignmentsPage: React.FC = () => {
             const isLate = new Date() > new Date(asgn.due_date) && !sub;
 
             return (
-              <Card key={asgn.id} className="p-5 border border-slate-800 bg-slate-900/80 space-y-4">
+              <Card key={asgn.id} className="p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 space-y-4 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-sky-400 px-2 py-0.5 rounded bg-sky-500/10 border border-sky-500/20">
+                      <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400 px-2 py-0.5 rounded bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/20">
                         {asgn.course_code}
                       </span>
-                      <span className="text-xs text-slate-400">{asgn.course_name}</span>
+                      <span className="text-xs text-slate-600 dark:text-slate-400">{asgn.course_name}</span>
                       <Badge variant="outline" size="sm">
                         Max Score: {asgn.max_score} pts
                       </Badge>
                     </div>
 
-                    <h4 className="text-base font-bold text-white leading-tight mt-1">{asgn.title}</h4>
-                    <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">{asgn.description}</p>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white leading-tight mt-1">{asgn.title}</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">{asgn.description}</p>
                   </div>
 
                   <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-purple-400" />
+                    <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                       <span>Due: {formatDate(asgn.due_date)}</span>
                     </span>
 
@@ -167,17 +179,17 @@ export const AssignmentsPage: React.FC = () => {
 
                 {/* Feedback Box if Graded */}
                 {sub?.feedback && (
-                  <div className="p-3.5 rounded-xl bg-purple-950/20 border border-purple-500/30 text-xs">
-                    <div className="font-bold text-purple-300 flex items-center gap-1.5 mb-1">
-                      <Award className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-500/30 text-xs">
+                    <div className="font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 mb-1">
+                      <Award className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                       <span>Faculty Feedback & Evaluation</span>
                     </div>
-                    <p className="text-slate-300 italic">{sub.feedback}</p>
+                    <p className="text-slate-700 dark:text-slate-300 italic">{sub.feedback}</p>
                   </div>
                 )}
 
                 {/* Footer Action Buttons */}
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                   <div className="text-[11px] text-slate-500">
                     Weightage: {asgn.weightage}% towards continuous assessment
                   </div>

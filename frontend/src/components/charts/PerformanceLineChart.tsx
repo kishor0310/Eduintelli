@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
 export interface PerformanceTrendPoint {
   month: string;
@@ -21,19 +22,22 @@ interface PerformanceLineChartProps {
 }
 
 export const PerformanceLineChart: React.FC<PerformanceLineChartProps> = ({ data }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
+          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} opacity={0.7} />
           <XAxis
             dataKey="month"
-            stroke="#94a3b8"
+            stroke={isDark ? '#94a3b8' : '#64748b'}
             fontSize={12}
             tickLine={false}
           />
           <YAxis
-            stroke="#94a3b8"
+            stroke={isDark ? '#94a3b8' : '#64748b'}
             fontSize={12}
             domain={[0, 100]}
             tickLine={false}
@@ -41,12 +45,12 @@ export const PerformanceLineChart: React.FC<PerformanceLineChartProps> = ({ data
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#0f172a',
-              borderColor: '#334155',
+              backgroundColor: isDark ? '#0f172a' : '#ffffff',
+              borderColor: isDark ? '#334155' : '#e2e8f0',
               borderRadius: '0.75rem',
-              color: '#f8fafc',
+              color: isDark ? '#f8fafc' : '#0f172a',
               fontSize: '12px',
-              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+              boxShadow: isDark ? '0 10px 25px -5px rgba(0,0,0,0.5)' : '0 10px 25px -5px rgba(0,0,0,0.08)',
             }}
             formatter={(value: any, name: string) => [
               `${value}%`,
@@ -61,19 +65,19 @@ export const PerformanceLineChart: React.FC<PerformanceLineChartProps> = ({ data
             type="monotone"
             dataKey="performance"
             name="performance"
-            stroke="#38bdf8"
+            stroke="#0284c7"
             strokeWidth={3}
-            dot={{ r: 4, fill: '#38bdf8', strokeWidth: 2, stroke: '#0f172a' }}
-            activeDot={{ r: 6, fill: '#38bdf8' }}
+            dot={{ r: 4, fill: '#0284c7', strokeWidth: 2, stroke: isDark ? '#0f172a' : '#ffffff' }}
+            activeDot={{ r: 6, fill: '#0284c7' }}
           />
           <Line
             type="monotone"
             dataKey="attendance"
             name="attendance"
-            stroke="#a855f7"
+            stroke="#9333ea"
             strokeWidth={2}
             strokeDasharray="4 4"
-            dot={{ r: 3, fill: '#a855f7' }}
+            dot={{ r: 3, fill: '#9333ea' }}
           />
         </LineChart>
       </ResponsiveContainer>

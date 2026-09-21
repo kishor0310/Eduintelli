@@ -17,20 +17,20 @@ export const PerformanceTrendCard: React.FC<PerformanceTrendCardProps> = ({
   const isPositive = trendDelta >= 0;
 
   return (
-    <Card className="p-4 border border-slate-800 bg-slate-900/80">
+    <Card className="p-4 border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-slate-800 text-slate-300">
-            <Activity className="w-4 h-4 text-sky-400" />
+          <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <Activity className="w-4 h-4 text-sky-500 dark:text-sky-400" />
           </div>
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{recentTitle}</span>
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{recentTitle}</span>
         </div>
         <div
           className={cn(
             'flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full border',
             isPositive
-              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-              : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+              : 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30'
           )}
         >
           {isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
@@ -38,7 +38,7 @@ export const PerformanceTrendCard: React.FC<PerformanceTrendCardProps> = ({
         </div>
       </div>
 
-      <p className="text-xs text-slate-300 leading-relaxed mt-2">{summary}</p>
+      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mt-2">{summary}</p>
     </Card>
   );
 };

@@ -8,12 +8,9 @@ import {
   FileCheck2,
   GraduationCap,
   FileSpreadsheet,
-  Clock,
   Users,
   Shield,
   Sparkles,
-  BarChart3,
-  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -60,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/80 backdrop-blur-sm z-30 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -68,19 +65,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Sidebar Aside */}
       <aside
         className={cn(
-          'fixed lg:sticky top-16 left-0 z-30 w-64 h-[calc(100vh-4rem)] bg-slate-950/90 border-r border-slate-800/80 flex flex-col justify-between p-4 transition-transform duration-200 ease-in-out',
+          'fixed lg:sticky top-16 left-0 z-30 w-64 h-[calc(100vh-4rem)] bg-white dark:bg-slate-950/90 border-r border-slate-200 dark:border-slate-800/80 flex flex-col justify-between p-4 transition-all duration-200 ease-in-out',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="space-y-6">
           {/* Active Portal Badge */}
-          <div className="p-3 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-900/60 border border-slate-800 flex items-center justify-between">
+          <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <div>
-              <div className="text-[10px] uppercase font-bold text-slate-400">Current Portal</div>
-              <div className="font-extrabold text-sm text-white flex items-center gap-1.5 mt-0.5">
-                {role === 'STUDENT' && <GraduationCap className="w-4 h-4 text-emerald-400" />}
-                {role === 'TEACHER' && <Users className="w-4 h-4 text-sky-400" />}
-                {role === 'ADMIN' && <Shield className="w-4 h-4 text-purple-400" />}
+              <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Current Portal</div>
+              <div className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-1.5 mt-0.5">
+                {role === 'STUDENT' && <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                {role === 'TEACHER' && <Users className="w-4 h-4 text-sky-600 dark:text-sky-400" />}
+                {role === 'ADMIN' && <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
                 <span>{role === 'STUDENT' ? 'Student Intelligence' : role === 'TEACHER' ? 'Faculty Command' : 'Admin Executive'}</span>
               </div>
             </div>
@@ -88,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           {/* Nav List */}
           <nav className="space-y-1">
-            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
               Navigation
             </div>
             {currentNav.map((item) => (
@@ -101,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150',
                     isActive
                       ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-900'
                   )
                 }
               >
@@ -113,13 +110,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Bottom AI Status Badge */}
-        <div className="p-3 rounded-2xl bg-purple-950/20 border border-purple-500/25 text-xs text-slate-300">
-          <div className="flex items-center gap-2 text-purple-300 font-bold mb-1">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+        <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-500/25 text-xs text-slate-700 dark:text-slate-300">
+          <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-bold mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
             <span>AI Diagnostic Online</span>
           </div>
-          <p className="text-[10px] text-slate-400 leading-tight">
-            Early intervention heuristics & predictive modeling active.
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+            Early intervention heuristics & predictive voiceover active.
           </p>
         </div>
       </aside>

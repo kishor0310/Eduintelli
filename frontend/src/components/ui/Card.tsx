@@ -18,11 +18,11 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-2xl p-5 relative overflow-hidden',
+        'rounded-2xl p-5 relative overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200',
         isGlass && 'glass-card',
         isHoverable && 'glass-card-hover',
         aiBorder && 'border border-purple-500/30 shadow-ai-glow',
-        !isGlass && 'bg-slate-900 border border-slate-800',
+        !isGlass && 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm',
         className
       )}
       {...props}

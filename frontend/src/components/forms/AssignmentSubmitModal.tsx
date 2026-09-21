@@ -69,18 +69,18 @@ export const AssignmentSubmitModal: React.FC<AssignmentSubmitModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         {/* Upload Simulation Card */}
-        <div className="p-4 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900/50 hover:border-brand-500 transition-colors text-center cursor-pointer">
-          <div className="p-3 rounded-full bg-slate-800 text-brand-400 inline-block mb-2">
+        <div className="p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:border-brand-500 transition-colors text-center cursor-pointer">
+          <div className="p-3 rounded-full bg-slate-200 dark:bg-slate-800 text-brand-600 dark:text-brand-400 inline-block mb-2">
             <FileText className="w-6 h-6" />
           </div>
-          <div className="font-bold text-white text-xs">Solution Document Attached</div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-mono">{fileUrl}</div>
-          <p className="text-[10px] text-slate-500 mt-2">Accepted: PDF, ZIP, DOCX, IPYNB (Max 25MB)</p>
+          <div className="font-bold text-slate-900 dark:text-white text-xs">Solution Document Attached</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-mono">{fileUrl}</div>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">Accepted: PDF, ZIP, DOCX, IPYNB (Max 25MB)</p>
         </div>
 
         {/* Text Area for Comments / Code Links */}
         <div>
-          <label className="block text-slate-300 font-semibold mb-1">
+          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             Student Notes & Git Repository Link (Optional)
           </label>
           <textarea
@@ -88,12 +88,12 @@ export const AssignmentSubmitModal: React.FC<AssignmentSubmitModalProps> = ({
             onChange={(e) => setSubmissionText(e.target.value)}
             rows={3}
             placeholder="Include GitHub commit hashes, setup instructions, or notes for the instructor..."
-            className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-500"
           />
         </div>
 
         {/* Submit Actions */}
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

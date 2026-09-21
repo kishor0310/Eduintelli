@@ -10,6 +10,7 @@ import { RiskDonutChart } from '../../components/charts/RiskDonutChart';
 import { AIInsightCard } from '../../components/ai/AIInsightCard';
 import { AttendanceMarkerModal } from '../../components/forms/AttendanceMarkerModal';
 import { InterventionModal } from '../../components/forms/InterventionModal';
+import { SpeakButton } from '../../components/voice/SpeakButton';
 import {
   Users,
   CalendarCheck,
@@ -18,9 +19,7 @@ import {
   FileCheck2,
   Sparkles,
   Send,
-  UserCheck,
   BookOpen,
-  ArrowUpRight,
   ShieldAlert,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -71,28 +70,38 @@ export const TeacherDashboard: React.FC = () => {
 
   const { teacher, kpis, riskDistribution, coursesTaught, aiTeacherInsights, studentsRequiringAttention } = data;
 
+  const teacherSummary = `Faculty Class Health Briefing for Professor ${teacher.name}: You are supervising ${kpis.totalStudents} enrolled students across ${coursesTaught.length} course sections. Class attendance is averaging ${kpis.averageAttendance}%, with an average academic mastery of ${kpis.averageMarks}%. Currently, ${kpis.studentsAtRisk} students require early academic intervention, including ${studentsRequiringAttention.map((s: any) => s.name).slice(0, 3).join(', ')}.`;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100">
       {/* 1. TOP HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-sky-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400 font-mono">
               {teacher.employee_id || 'FAC-CS-101'} • {teacher.department}
             </span>
             <Badge variant="ai" size="sm">
               Faculty Command Center
             </Badge>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {teacher.name} — Class Health & Interventions
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Managing {coursesTaught.length} Active Courses ({kpis.totalStudents} Registered Students)
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <SpeakButton
+            text={teacherSummary}
+            title="Class Health Briefing"
+            label="Class Briefing"
+            size="md"
+            variant="default"
+          />
+
           <Button
             variant="primary"
             size="sm"
@@ -114,7 +123,7 @@ export const TeacherDashboard: React.FC = () => {
 
           <Link to="/assignments">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <FileCheck2 className="w-3.5 h-3.5 text-purple-400" />
+              <FileCheck2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               <span>Review Submissions</span>
             </Button>
           </Link>
@@ -167,30 +176,30 @@ export const TeacherDashboard: React.FC = () => {
       {/* 3. RISK DISTRIBUTION & AI TEACHER INSIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Risk Distribution Donut Chart */}
-        <Card className="flex flex-col justify-between">
+        <Card className="flex flex-col justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-bold text-white">Student Risk Distribution</h3>
-              <p className="text-xs text-slate-400">Class risk classification overview</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Student Risk Distribution</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Class risk classification overview</p>
             </div>
             <Badge variant="default" size="sm">Live Model</Badge>
           </div>
           <RiskDonutChart data={riskDistribution} />
-          <div className="pt-2 border-t border-slate-800 flex justify-between text-xs text-slate-400">
-            <span className="text-emerald-400 font-semibold">{kpis.lowRiskCount} On Track</span>
-            <span className="text-amber-400 font-semibold">{kpis.mediumRiskCount} Medium</span>
-            <span className="text-rose-400 font-semibold">{kpis.highRiskCount} Critical</span>
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{kpis.lowRiskCount} On Track</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">{kpis.mediumRiskCount} Medium</span>
+            <span className="text-rose-600 dark:text-rose-400 font-semibold">{kpis.highRiskCount} Critical</span>
           </div>
         </Card>
 
         {/* AI Teacher Insights */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>AI Cohort Diagnostic Alerts</span>
             </h3>
-            <span className="text-[11px] text-slate-400 font-mono">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
               {aiTeacherInsights.length} Active Observations
             </span>
           </div>
@@ -204,14 +213,14 @@ export const TeacherDashboard: React.FC = () => {
       </div>
 
       {/* 4. ACTIONABLE AT-RISK STUDENT ROSTER TABLE */}
-      <Card className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+      <Card className="space-y-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-rose-500" />
               <span>Students Requiring Faculty Attention & Intervention</span>
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Ranked by compound academic risk index. Click &quot;Intervene&quot; to trigger tailored remediation alerts.
             </p>
           </div>
@@ -222,7 +231,7 @@ export const TeacherDashboard: React.FC = () => {
 
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="py-3 px-3">Student Name</th>
                 <th className="py-3 px-3">Roll No</th>
@@ -235,19 +244,19 @@ export const TeacherDashboard: React.FC = () => {
                 <th className="py-3 px-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/70">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
               {studentsRequiringAttention.map((st: any) => (
-                <tr key={st.studentId} className="hover:bg-slate-900/60 transition-colors">
-                  <td className="py-3 px-3 font-bold text-white">{st.name}</td>
-                  <td className="py-3 px-3 font-mono text-slate-400 text-[11px]">{st.rollNumber}</td>
-                  <td className="py-3 px-3 text-slate-300 font-semibold">{st.courseCode}</td>
+                <tr key={st.studentId} className="hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors">
+                  <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">{st.name}</td>
+                  <td className="py-3 px-3 font-mono text-slate-500 dark:text-slate-400 text-[11px]">{st.rollNumber}</td>
+                  <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-semibold">{st.courseCode}</td>
                   <td className="py-3 px-3 text-center">
-                    <span className={st.attendance < 75 ? 'text-rose-400 font-bold' : 'text-slate-200'}>
+                    <span className={st.attendance < 75 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-200'}>
                       {st.attendance}%
                     </span>
                   </td>
-                  <td className="py-3 px-3 text-center text-slate-200">{st.assignmentAvg}%</td>
-                  <td className="py-3 px-3 text-center text-slate-200">{st.examAvg}%</td>
+                  <td className="py-3 px-3 text-center text-slate-700 dark:text-slate-200">{st.assignmentAvg}%</td>
+                  <td className="py-3 px-3 text-center text-slate-700 dark:text-slate-200">{st.examAvg}%</td>
                   <td className="py-3 px-3 text-center">
                     <Badge
                       variant={st.riskLevel === 'HIGH' ? 'danger' : 'warning'}
@@ -256,7 +265,7 @@ export const TeacherDashboard: React.FC = () => {
                       {st.riskScore}/100
                     </Badge>
                   </td>
-                  <td className="py-3 px-3 text-slate-300 max-w-xs truncate" title={st.recommendedAction}>
+                  <td className="py-3 px-3 text-slate-600 dark:text-slate-300 max-w-xs truncate" title={st.recommendedAction}>
                     {st.recommendedAction}
                   </td>
                   <td className="py-3 px-3 text-right">
@@ -279,26 +288,26 @@ export const TeacherDashboard: React.FC = () => {
 
       {/* 5. COURSES TAUGHT CARDS */}
       <div className="space-y-3">
-        <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-sky-400" />
+        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <span>My Assigned Courses & Class Roster</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {coursesTaught.map((course: any) => (
-            <Card key={course.id} className="p-4 border border-slate-800 flex flex-col justify-between">
+            <Card key={course.id} className="p-4 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-mono font-bold text-sky-400">{course.code}</span>
+                  <span className="text-[11px] font-mono font-bold text-sky-600 dark:text-sky-400">{course.code}</span>
                   <Badge variant="info" size="sm">{course.credits} Credits</Badge>
                 </div>
-                <h4 className="text-sm font-bold text-white mb-1">{course.name}</h4>
-                <p className="text-xs text-slate-400">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-1">{course.name}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {course.department} • {course.enrolled_students || 15} Students Enrolled
                 </p>
               </div>
 
-              <div className="pt-3 mt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                 <Button
                   size="sm"
                   variant="outline"

@@ -74,7 +74,7 @@ export const AssignmentGradeModal: React.FC<AssignmentGradeModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div>
-          <label className="block text-slate-300 font-semibold mb-1">
+          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             Marks Awarded (Out of {maxScore})
           </label>
           <input
@@ -83,13 +83,13 @@ export const AssignmentGradeModal: React.FC<AssignmentGradeModalProps> = ({
             max={maxScore}
             value={score}
             onChange={(e) => setScore(Number(e.target.value))}
-            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-base focus:outline-none focus:border-brand-500"
+            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold text-base focus:outline-none focus:border-brand-500"
             required
           />
         </div>
 
         <div>
-          <label className="block text-slate-300 font-semibold mb-1">
+          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             Detailed Pedagogical Feedback
           </label>
           <textarea
@@ -97,12 +97,12 @@ export const AssignmentGradeModal: React.FC<AssignmentGradeModalProps> = ({
             onChange={(e) => setFeedback(e.target.value)}
             rows={4}
             placeholder="Highlight strengths, point out edge case errors, and suggest review topics..."
-            className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 leading-relaxed"
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 leading-relaxed"
             required
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

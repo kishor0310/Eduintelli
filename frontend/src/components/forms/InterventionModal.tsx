@@ -79,15 +79,15 @@ export const InterventionModal: React.FC<InterventionModalProps> = ({
     >
       <form onSubmit={handleSend} className="space-y-4 text-xs">
         {/* Student Risk Profile Banner */}
-        <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <div className="font-bold text-white text-sm">{studentName}</div>
-            <div className="text-slate-400 text-[11px] font-mono">{courseName}</div>
+            <div className="font-bold text-slate-900 dark:text-white text-sm">{studentName}</div>
+            <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">{courseName}</div>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <div className="text-[10px] uppercase text-slate-400">Risk Score</div>
-              <div className="font-extrabold text-rose-400 text-sm">{riskScore}/100</div>
+              <div className="text-[10px] uppercase text-slate-500 dark:text-slate-400">Risk Score</div>
+              <div className="font-extrabold text-rose-600 dark:text-rose-400 text-sm">{riskScore}/100</div>
             </div>
             <Badge variant="danger" size="sm">
               {riskLevel} Risk
@@ -97,7 +97,7 @@ export const InterventionModal: React.FC<InterventionModalProps> = ({
 
         {/* Intervention Strategy Selector */}
         <div>
-          <label className="block text-slate-300 font-semibold mb-1.5">
+          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1.5">
             Intervention Action Type
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -113,12 +113,12 @@ export const InterventionModal: React.FC<InterventionModalProps> = ({
                 onClick={() => setActionType(type.id as any)}
                 className={`p-2.5 rounded-xl border text-left transition-all ${
                   actionType === type.id
-                    ? 'border-brand-500 bg-brand-500/15 text-white shadow-sm'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                    ? 'border-brand-500 bg-brand-500/15 text-slate-900 dark:text-white shadow-sm'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-slate-300'
                 }`}
               >
-                <div className="font-bold text-xs text-white">{type.label}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">{type.desc}</div>
+                <div className="font-bold text-xs text-slate-900 dark:text-white">{type.label}</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{type.desc}</div>
               </button>
             ))}
           </div>
@@ -126,20 +126,20 @@ export const InterventionModal: React.FC<InterventionModalProps> = ({
 
         {/* Personalized Notes */}
         <div>
-          <label className="block text-slate-300 font-semibold mb-1">
+          <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">
             Personalized Guidance & Action Instructions
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
-            className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 leading-relaxed"
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 leading-relaxed"
             required
           />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

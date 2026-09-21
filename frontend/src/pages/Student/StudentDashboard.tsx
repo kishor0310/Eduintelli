@@ -13,13 +13,13 @@ import { RecommendationCard } from '../../components/ai/RecommendationCard';
 import { WeakSubjectCard } from '../../components/ai/WeakSubjectCard';
 import { PerformanceLineChart } from '../../components/charts/PerformanceLineChart';
 import { CourseRadarChart } from '../../components/charts/CourseRadarChart';
+import { SpeakButton } from '../../components/voice/SpeakButton';
 import {
   GraduationCap,
   CalendarCheck,
   FileCheck2,
   Award,
   Sparkles,
-  ArrowRight,
   BookOpen,
   Calendar,
   AlertTriangle,
@@ -56,15 +56,17 @@ export const StudentDashboard: React.FC = () => {
     return <LoadingSpinner message="Synthesizing academic trajectory and AI risk indicators..." />;
   }
 
-  const { student, kpis, aiAnalysis, courseMetrics, monthlyTrends, upcomingActivities, enrolledCourses } = data;
+  const { student, kpis, aiAnalysis, courseMetrics, monthlyTrends, upcomingActivities } = data;
+
+  const overallStudentSummary = `Academic Status for ${student.name}: Your cumulative GPA is ${Number(kpis.gpa).toFixed(2)}, attendance is ${kpis.attendancePercentage}%, and assignment score average is ${kpis.assignmentAverage}%. Your multi-factor risk score is ${kpis.riskScore} out of 100, placed in ${kpis.riskLevel} risk. ${kpis.riskLevel === 'HIGH' ? 'Immediate teacher intervention is recommended in weak subjects.' : 'Overall academic indicators are consistent.'}`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100">
       {/* 1. TOP HEADER & STUDENT GREETING */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-brand-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 font-mono">
               {student.roll_number} • {student.department}
             </span>
             <Badge
@@ -74,19 +76,27 @@ export const StudentDashboard: React.FC = () => {
               {kpis.riskLevel} Risk
             </Badge>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             Welcome back, {student.name}!
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Academic records updated for Semester {student.semester} ({student.batch})
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <SpeakButton
+            text={overallStudentSummary}
+            title={`${student.name} Academic Briefing`}
+            label="Voice Briefing"
+            size="md"
+            variant="default"
+          />
+
           <Link to="/reports">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Full Performance Dossier</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Performance Dossier</span>
             </Button>
           </Link>
           <Button
@@ -96,7 +106,7 @@ export const StudentDashboard: React.FC = () => {
             className="gap-1.5 text-xs shadow-md"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Explain Risk Score ({kpis.riskScore})</span>
+            <span>Explain Risk ({kpis.riskScore})</span>
           </Button>
         </div>
       </div>
@@ -159,13 +169,13 @@ export const StudentDashboard: React.FC = () => {
         </div>
 
         {/* Monthly Performance & Attendance Trajectory */}
-        <Card className="lg:col-span-2 flex flex-col justify-between">
+        <Card className="lg:col-span-2 flex flex-col justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <span>Monthly Academic Mastery & Attendance Trajectory</span>
               </h3>
-              <p className="text-xs text-slate-400">Continuous 5-month longitudinal tracking</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Continuous 5-month longitudinal tracking</p>
             </div>
             <Badge variant="ai" size="sm">Predictive Curve</Badge>
           </div>
@@ -178,11 +188,11 @@ export const StudentDashboard: React.FC = () => {
         {/* Left Column: AI Academic Insights & Positives */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>AI Academic Insights & Diagnostic Highlights</span>
             </h3>
-            <span className="text-[11px] text-slate-400 font-mono">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
               {aiAnalysis.insights.length} Generated
             </span>
           </div>
@@ -197,11 +207,11 @@ export const StudentDashboard: React.FC = () => {
         {/* Right Column: Weak Subjects & Priority Diagnosis */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-sky-400" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               <span>Subject Mastery & Weak Area Priorities</span>
             </h3>
-            <span className="text-[11px] text-slate-400">Ranked by Priority</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Ranked by Priority</span>
           </div>
 
           <div className="space-y-3">
@@ -215,11 +225,11 @@ export const StudentDashboard: React.FC = () => {
       {/* 5. RADAR BENCHMARK & 7-DAY ACTION ROADMAP */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Course Radar Chart */}
-        <Card className="flex flex-col justify-between">
+        <Card className="flex flex-col justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-bold text-white">Course Mastery vs Cohort Benchmark</h3>
-              <p className="text-xs text-slate-400">Comparing your score against class percentile</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Course Mastery vs Cohort Benchmark</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Comparing your score against class percentile</p>
             </div>
             <Badge variant="default" size="sm">5 Enrolled</Badge>
           </div>
@@ -229,11 +239,11 @@ export const StudentDashboard: React.FC = () => {
         {/* 7-Day Personalized Action Tasks */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Personalized 7-Day AI Action Roadmap</span>
             </h3>
-            <span className="text-[11px] text-slate-400">Click check to complete</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">Click check to complete</span>
           </div>
 
           <div className="space-y-2.5">
@@ -247,15 +257,15 @@ export const StudentDashboard: React.FC = () => {
       {/* 6. UPCOMING DEADLINES & EXAMINATIONS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Assignments Upcoming */}
-        <Card>
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-slate-800 text-sky-400">
+              <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-slate-800 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-slate-700">
                 <FileCheck2 className="w-4 h-4" />
               </div>
-              <h4 className="text-sm font-bold text-white">Upcoming Assignment Deadlines</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Upcoming Assignment Deadlines</h4>
             </div>
-            <Link to="/assignments" className="text-xs text-brand-400 hover:text-brand-300">
+            <Link to="/assignments" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">
               View All
             </Link>
           </div>
@@ -265,35 +275,35 @@ export const StudentDashboard: React.FC = () => {
               upcomingActivities.assignments.map((asgn: any) => (
                 <div
                   key={asgn.id}
-                  className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between"
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between"
                 >
                   <div>
-                    <div className="font-bold text-white">{asgn.title}</div>
-                    <div className="text-[11px] text-slate-400 font-mono">{asgn.course_code} • {asgn.course_name}</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{asgn.title}</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{asgn.course_code} • {asgn.course_name}</div>
                   </div>
                   <div className="text-right">
-                    <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 font-semibold text-[10px]">
+                    <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-semibold text-[10px] border border-purple-200 dark:border-purple-800">
                       {new Date(asgn.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-slate-400 text-xs py-4 text-center">No pending assignments due this week.</div>
+              <div className="text-slate-500 dark:text-slate-400 text-xs py-4 text-center">No pending assignments due this week.</div>
             )}
           </div>
         </Card>
 
         {/* Examinations Upcoming */}
-        <Card>
+        <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-slate-800 text-purple-400">
+              <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-slate-800 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-slate-700">
                 <Calendar className="w-4 h-4" />
               </div>
-              <h4 className="text-sm font-bold text-white">Upcoming Examinations</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Upcoming Examinations</h4>
             </div>
-            <Link to="/examinations" className="text-xs text-brand-400 hover:text-brand-300">
+            <Link to="/examinations" className="text-xs text-brand-600 dark:text-brand-400 hover:underline">
               View All
             </Link>
           </div>
@@ -303,11 +313,11 @@ export const StudentDashboard: React.FC = () => {
               upcomingActivities.exams.map((ex: any) => (
                 <div
                   key={ex.id}
-                  className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between"
+                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between"
                 >
                   <div>
-                    <div className="font-bold text-white">{ex.name}</div>
-                    <div className="text-[11px] text-slate-400 font-mono">{ex.course_code} • Room: {ex.room || 'Hall A'}</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{ex.name}</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{ex.course_code} • Room: {ex.room || 'Hall A'}</div>
                   </div>
                   <div className="text-right">
                     <Badge variant="warning" size="sm">
@@ -317,7 +327,7 @@ export const StudentDashboard: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="text-slate-400 text-xs py-4 text-center">No exams scheduled in the next 14 days.</div>
+              <div className="text-slate-500 dark:text-slate-400 text-xs py-4 text-center">No exams scheduled in the next 14 days.</div>
             )}
           </div>
         </Card>

@@ -8,8 +8,8 @@ import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { DepartmentBarChart } from '../../components/charts/DepartmentBarChart';
 import { AIInsightCard } from '../../components/ai/AIInsightCard';
+import { SpeakButton } from '../../components/voice/SpeakButton';
 import {
-  Shield,
   GraduationCap,
   Users,
   BookOpen,
@@ -17,7 +17,6 @@ import {
   Award,
   AlertTriangle,
   Sparkles,
-  TrendingUp,
   FileSpreadsheet,
   Building,
 } from 'lucide-react';
@@ -50,35 +49,45 @@ export const AdminDashboard: React.FC = () => {
     return <LoadingSpinner message="Generating institution-wide intelligence diagnostics and KPI benchmarks..." />;
   }
 
-  const { kpis, departmentAnalytics, courseBenchmarks, institutionalRiskTrends, aiInstitutionalInsights } = data;
+  const { kpis, departmentAnalytics, courseBenchmarks, aiInstitutionalInsights } = data;
+
+  const adminSummary = `Executive Institutional Briefing: The institution currently has ${kpis.totalStudents} enrolled students and ${kpis.totalTeachers} active faculty members across 3 departments. The overall campus retention rate is ${kpis.retentionRate}%, with an institutional GPA average of ${kpis.averageGpa}. Computer Science maintains the highest academic performance, while Information Technology is being benchmarked for supplemental TA support.`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100">
       {/* 1. TOP HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400 font-mono">
               Institutional Governance • Quality Assurance
             </span>
             <Badge variant="ai" size="sm">
               Executive Analytics
             </Badge>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Building className="w-7 h-7 text-purple-400" />
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Building className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             <span>EduIntelli Institutional Intelligence Center</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Monitoring 3 Engineering Departments, 8 Core Curriculums, and 21 Enrolled Cohorts.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <SpeakButton
+            text={adminSummary}
+            title="Executive Briefing"
+            label="Executive Briefing"
+            size="md"
+            variant="default"
+          />
+
           <Link to="/reports">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Generate Institutional Audit Report</span>
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Institutional Audit Report</span>
             </Button>
           </Link>
         </div>
@@ -149,11 +158,11 @@ export const AdminDashboard: React.FC = () => {
       {/* 4. DEPARTMENT COMPARATIVE CHARTS & INSTITUTIONAL INSIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Department Bar Chart */}
-        <Card className="lg:col-span-2 flex flex-col justify-between">
+        <Card className="lg:col-span-2 flex flex-col justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-sm font-bold text-white">Department Performance & Attendance Comparison</h3>
-              <p className="text-xs text-slate-400">Comparing Computer Science, AI, and Information Technology</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Department Performance & Attendance Comparison</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Comparing Computer Science, AI, and Information Technology</p>
             </div>
             <Badge variant="info" size="sm">Cross-Department</Badge>
           </div>
@@ -163,11 +172,11 @@ export const AdminDashboard: React.FC = () => {
         {/* AI Institutional Diagnostic Insights */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>AI Institutional Directives</span>
             </h3>
-            <span className="text-[11px] text-slate-400 font-mono">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
               {aiInstitutionalInsights.length} Policy Alerts
             </span>
           </div>
@@ -181,11 +190,11 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* 5. COURSE FAILURE RISK & PASS PROBABILITY BENCHMARK TABLE */}
-      <Card className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+      <Card className="space-y-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-bold text-white">Course Risk Benchmarks & Academic Health</h3>
-            <p className="text-xs text-slate-400">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Course Risk Benchmarks & Academic Health</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Evaluates course-level pass probabilities and identifies subjects requiring additional Teaching Assistants.
             </p>
           </div>
@@ -194,7 +203,7 @@ export const AdminDashboard: React.FC = () => {
 
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="py-3 px-3">Course</th>
                 <th className="py-3 px-3">Department</th>
@@ -205,18 +214,18 @@ export const AdminDashboard: React.FC = () => {
                 <th className="py-3 px-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/70">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
               {courseBenchmarks.map((cb: any) => (
-                <tr key={cb.courseId} className="hover:bg-slate-900/60 transition-colors">
+                <tr key={cb.courseId} className="hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors">
                   <td className="py-3 px-3">
-                    <div className="font-bold text-white">{cb.name}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">{cb.code}</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{cb.name}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{cb.code}</div>
                   </td>
-                  <td className="py-3 px-3 text-slate-300">{cb.department}</td>
-                  <td className="py-3 px-3 text-slate-300">{cb.teacherName}</td>
-                  <td className="py-3 px-3 text-center font-bold text-white">{cb.enrolledCount}</td>
+                  <td className="py-3 px-3 text-slate-600 dark:text-slate-300">{cb.department}</td>
+                  <td className="py-3 px-3 text-slate-600 dark:text-slate-300">{cb.teacherName}</td>
+                  <td className="py-3 px-3 text-center font-bold text-slate-900 dark:text-white">{cb.enrolledCount}</td>
                   <td className="py-3 px-3 text-center">
-                    <span className={cb.averageScore < 70 ? 'text-rose-400 font-bold' : 'text-slate-200'}>
+                    <span className={cb.averageScore < 70 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-200'}>
                       {cb.averageScore}%
                     </span>
                   </td>
@@ -232,10 +241,10 @@ export const AdminDashboard: React.FC = () => {
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         cb.status === 'Requires Support'
-                          ? 'bg-rose-500/15 text-rose-400'
+                          ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/15 dark:text-rose-400'
                           : cb.status === 'Moderate Risk'
-                          ? 'bg-amber-500/15 text-amber-400'
-                          : 'bg-emerald-500/15 text-emerald-400'
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-400'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400'
                       }`}
                     >
                       {cb.status}
