@@ -1,9 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import { AIService } from '../services/ai/aiService';
 import { AuthRequest } from '../middleware/auth';
 import { InsightGenerator } from '../services/ai/insightGenerator';
 import { isValidCsrfToken } from '../middleware/csrf';
 import { aiLimiter } from '../middleware/rateLimiter';
+
+// Rate-limit enforcement on AI analysis endpoints (prevents compute resource exhaustion - CWE-770)
+export const aiAnalysisLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  statusCode: 429,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: true, default: true },
+  message: {
+    success: false,
+    message: 'Too many AI analysis requests. Please try again later.',
+  },
+});
 
 // CWE-770: In-controller rate limit tracking for AI analysis endpoints to prevent resource exhaustion
 const aiRateLimitMap = new Map<string, { count: number; windowStart: number }>();
@@ -12,7 +27,20 @@ const AI_MAX_REQUESTS_PER_WINDOW = 30; // max 30 AI analysis requests per minute
 
 export class AIController {
   // Rate limiter reference for AI analysis endpoints (CWE-770)
-  public static readonly aiLimiter = aiLimiter;
+  public static readonly aiLimiter = aiAnalysisLimiter;
+  public static readonly aiAnalysisLimiter = aiAnalysisLimiter;
+
+  public static async enforceAiRateLimit(req: Request, res: Response): Promise<boolean> {
+    if ((req as any).aiRateLimitEnforced) return !res.headersSent;
+    (req as any).aiRateLimitEnforced = true;
+    await new Promise<void>((resolve, reject) => {
+      aiAnalysisLimiter(req, res, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+    return !res.headersSent;
+  }
 
   // CWE-639 & CWE-770: Enforce strict IDOR authorization and AI analysis rate limiting
   private static resolveStudentId(req: AuthRequest): { studentId?: string; error?: string; status?: number } {
@@ -69,6 +97,10 @@ export class AIController {
 
   public static async getStudentRisk(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // Enforce rate limiting on AI analysis endpoint (CWE-770)
+      const allowed = await AIController.enforceAiRateLimit(req, res);
+      if (!allowed) return;
+
       const { studentId, error, status } = AIController.resolveStudentId(req);
       if (error) {
         return res.status(status || 403).json({ success: false, message: error });
@@ -91,6 +123,10 @@ export class AIController {
 
   public static async getStudentRecommendations(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // Enforce rate limiting on AI analysis endpoint (CWE-770)
+      const allowed = await AIController.enforceAiRateLimit(req, res);
+      if (!allowed) return;
+
       const { studentId, error, status } = AIController.resolveStudentId(req);
       if (error) {
         return res.status(status || 403).json({ success: false, message: error });
@@ -110,6 +146,10 @@ export class AIController {
 
   public static async getStudentInsights(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // Enforce rate limiting on AI analysis endpoint (CWE-770)
+      const allowed = await AIController.enforceAiRateLimit(req, res);
+      if (!allowed) return;
+
       const { studentId, error, status } = AIController.resolveStudentId(req);
       if (error) {
         return res.status(status || 403).json({ success: false, message: error });
@@ -129,6 +169,10 @@ export class AIController {
 
   public static async getInstitutionalInsights(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // Enforce rate limiting on AI analysis endpoint (CWE-770)
+      const allowed = await AIController.enforceAiRateLimit(req, res);
+      if (!allowed) return;
+
       // CWE-284: Verify administrator authorization for institutional insights
       if (!req.user || req.user.role !== 'ADMIN') {
         return res.status(403).json({
@@ -151,6 +195,9 @@ export class AIController {
 
   public static async askCoach(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // Enforce rate limiting on AI analysis endpoint (CWE-770)
+      const allowed = await AIController.enforceAiRateLimit(req, res);
+      if (!allowed) return;
       // CWE-352: Validate anti-CSRF token validity / session authorization on AI coaching requests
       const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'];
       const isCsrfValid = csrfToken ? isValidCsrfToken(csrfToken, req) : false;

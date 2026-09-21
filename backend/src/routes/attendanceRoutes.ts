@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { AttendanceController } from '../controllers/attendanceController';
-import { authenticate, authorizeTeacher } from '../middleware/auth';
+import { authenticate, authorizeTeacher, authorizeStudent } from '../middleware/auth';
 import { attendanceLimiter } from '../middleware/rateLimiter';
 import { csrfProtection } from '../middleware/csrf';
 
 const router = Router();
 
 // Rate-limited attendance GET endpoints (CWE-770 rate limiting & CWE-639 IDOR protection)
-router.get('/student', authenticate, attendanceLimiter, AttendanceController.getStudentAttendance);
+router.get('/student', authenticate, authorizeStudent, attendanceLimiter, AttendanceController.getStudentAttendance);
+router.get('/students', authenticate, authorizeTeacher, attendanceLimiter, AttendanceController.getAttendanceList);
 router.get('/student/:studentId', authenticate, authorizeTeacher, attendanceLimiter, AttendanceController.getStudentAttendance);
 router.get('/course/:courseId', authenticate, authorizeTeacher, attendanceLimiter, AttendanceController.getCourseAttendance);
 // Authorized attendance list endpoint for teachers & administrators (CWE-639)

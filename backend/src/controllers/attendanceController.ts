@@ -17,13 +17,11 @@ export class AttendanceController {
         }
         studentId = req.user.studentId;
       } else if (req.user?.role === 'TEACHER') {
-        // Teachers must not specify arbitrary studentId; enforce relationship check or deny
-        if (req.params.studentId) {
-          return res.status(403).json({
-            success: false,
-            message: 'Forbidden: Teachers cannot access arbitrary student attendance.',
-          });
-        }
+        // Teachers cannot view arbitrary student attendance or access the student self-service endpoint
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Teachers cannot access student personal attendance endpoint.',
+        });
       }
 
       // CWE-639 IDOR Protection: Strictly require authenticated student profile without hardcoded fallback

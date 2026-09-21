@@ -8,8 +8,8 @@ import { config } from './config';
 
 export const app = express();
 
-// Trust reverse proxy for accurate client IP resolution in rate limiters
-app.set('trust proxy', 1);
+// Trust only loopback reverse proxy for secure, spoof-resistant client IP resolution (CWE-307)
+app.set('trust proxy', 'loopback');
 
 // Whitelist of allowed origins (prevents CSRF via permissive CORS - CWE-352)
 const allowedOrigins = [

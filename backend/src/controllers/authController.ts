@@ -1,12 +1,28 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import { db } from '../database/db';
 import { config } from '../config';
 import { loginSchema, registerSchema } from '../validators';
 import { AuthRequest } from '../middleware/auth';
 import { authLimiter } from '../middleware/rateLimiter';
 import { isValidCsrfToken } from '../middleware/csrf';
+
+// Rate limiting on login endpoint (prevents brute force & credential stuffing - CWE-307)
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  statusCode: 429,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  validate: { xForwardedForHeader: true, default: true },
+  message: {
+    success: false,
+    message: 'Too many authentication attempts. Please try again after 15 minutes.',
+  },
+});
 
 // CWE-307: In-controller failed login attempt tracker to prevent brute force & credential stuffing attacks
 const loginAttemptsMap = new Map<string, { count: number; firstAttempt: number }>();
@@ -15,7 +31,19 @@ const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 export class AuthController {
   // Rate limiter reference for login endpoint (CWE-307)
-  public static readonly loginLimiter = authLimiter;
+  public static readonly loginLimiter = loginLimiter;
+
+  public static async enforceLoginRateLimit(req: Request, res: Response): Promise<boolean> {
+    if ((req as any).loginRateLimitEnforced) return !res.headersSent;
+    (req as any).loginRateLimitEnforced = true;
+    await new Promise<void>((resolve, reject) => {
+      loginLimiter(req, res, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+    return !res.headersSent;
+  }
 
   private static recordFailedAttempt(clientIp: string): number {
     const now = Date.now();
@@ -30,6 +58,10 @@ export class AuthController {
 
   public static async login(req: Request, res: Response, next: NextFunction) {
     try {
+      // Enforce rate limiting on login endpoint (CWE-307)
+      const isAllowed = await AuthController.enforceLoginRateLimit(req, res);
+      if (!isAllowed) return;
+
       const rawIp = req.ip || req.socket?.remoteAddress || '127.0.0.1';
       const clientIp = Array.isArray(rawIp) ? rawIp[0] : String(rawIp).split(',')[0].trim();
 
