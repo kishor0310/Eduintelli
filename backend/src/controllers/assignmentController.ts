@@ -6,8 +6,42 @@ import { createAssignmentSchema, submitAssignmentSchema, gradeSubmissionSchema }
 export class AssignmentController {
   public static async getAssignments(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const studentId = req.user?.studentId;
+      // CWE-639 IDOR Protection: Enforce authorization check on assignment retrieval
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
+      if (!['STUDENT', 'TEACHER', 'ADMIN'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Access denied.' });
+      }
+
+      const studentId = req.user.studentId;
+      const teacherId = req.user.teacherId;
       const courseId = req.query.courseId as string;
+
+      // Object-level authorization check when retrieving assignments for a specific course (CWE-639 IDOR)
+      if (courseId) {
+        if (req.user.role === 'STUDENT' && studentId) {
+          const isEnrolled = await db.get<any>(
+            'SELECT id FROM enrollments WHERE student_id = $1 AND course_id = $2',
+            [studentId, courseId]
+          );
+          if (!isEnrolled) {
+            return res.status(403).json({
+              success: false,
+              message: 'Forbidden: You are not authorized to access assignments for this course.',
+            });
+          }
+        } else if (req.user.role === 'TEACHER' && teacherId) {
+          const course = await db.get<any>('SELECT teacher_id FROM courses WHERE id = $1', [courseId]);
+          if (course && course.teacher_id && course.teacher_id !== teacherId) {
+            return res.status(403).json({
+              success: false,
+              message: 'Forbidden: Faculty can only inspect assignments for courses they instruct.',
+            });
+          }
+        }
+      }
 
       let sql = `
         SELECT a.*, c.code as course_code, c.name as course_name,
@@ -19,9 +53,13 @@ export class AssignmentController {
       const params: any[] = [];
 
       // Prevent Assignment IDOR: Students can only view assignments for enrolled courses (CWE-639)
-      if (req.user?.role === 'STUDENT' && studentId) {
+      if (req.user.role === 'STUDENT' && studentId) {
         params.push(studentId);
         sql += ` AND a.course_id IN (SELECT course_id FROM enrollments WHERE student_id = $${params.length})`;
+      } else if (req.user.role === 'TEACHER' && teacherId) {
+        // Prevent Assignment IDOR: Faculty can only view assignments for their own courses (CWE-639)
+        params.push(teacherId);
+        sql += ` AND c.teacher_id = $${params.length}`;
       }
 
       if (courseId) {
@@ -48,6 +86,60 @@ export class AssignmentController {
         success: true,
         count: assignments.length,
         data: assignments,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // CWE-639 IDOR Protection: Enforce authorization check on single assignment retrieval
+  public static async getAssignmentById(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
+      if (!['STUDENT', 'TEACHER', 'ADMIN'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Access denied.' });
+      }
+
+      const { id } = req.params;
+      const assignment = await db.get<any>(
+        `SELECT a.*, c.code as course_code, c.name as course_name, c.teacher_id
+         FROM assignments a
+         JOIN courses c ON a.course_id = c.id
+         WHERE a.id = $1`,
+        [id]
+      );
+
+      if (!assignment) {
+        return res.status(404).json({ success: false, message: 'Assignment not found.' });
+      }
+
+      // Prevent Assignment Retrieval IDOR (CWE-639)
+      if (req.user.role === 'STUDENT' && req.user.studentId) {
+        const isEnrolled = await db.get<any>(
+          'SELECT id FROM enrollments WHERE student_id = $1 AND course_id = $2',
+          [req.user.studentId, assignment.course_id]
+        );
+        if (!isEnrolled) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: You are not authorized to access this assignment (not enrolled).',
+          });
+        }
+      } else if (req.user.role === 'TEACHER' && req.user.teacherId) {
+        if (assignment.teacher_id && assignment.teacher_id !== req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty can only access assignments for courses they instruct.',
+          });
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: assignment,
       });
     } catch (error) {
       next(error);
@@ -181,7 +273,27 @@ export class AssignmentController {
 
   public static async getSubmissionsForAssignment(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Only faculty can view submissions.' });
+      }
+
       const { assignmentId } = req.params;
+
+      // Verify the teacher instructs the course for this assignment
+      if (req.user.role === 'TEACHER' && req.user.teacherId) {
+        const assignment = await db.get<any>(
+          `SELECT c.teacher_id FROM assignments a
+           JOIN courses c ON a.course_id = c.id
+           WHERE a.id = $1`,
+          [assignmentId]
+        );
+        if (assignment && assignment.teacher_id !== req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty can only inspect submissions for their own assignments.',
+          });
+        }
+      }
 
       const submissions = await db.query<any>(
         `SELECT sub.*, s.roll_number, u.name as student_name, u.email as student_email, u.avatar_url

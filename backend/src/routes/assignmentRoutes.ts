@@ -18,4 +18,7 @@ router.post('/grade', authenticate, authorizeTeacher, csrfProtection, submission
 
 router.get('/:assignmentId/submissions', authenticate, authorizeTeacher, assignmentLimiter, AssignmentController.getSubmissionsForAssignment);
 
+// IDOR-protected assignment retrieval by ID (CWE-639)
+router.get('/:id', authenticate, assignmentLimiter, AssignmentController.getAssignmentById);
+
 export default router;

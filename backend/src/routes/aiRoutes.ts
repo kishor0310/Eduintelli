@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AIController } from '../controllers/aiController';
 import { authenticate, authorizeTeacher } from '../middleware/auth';
 import { riskLimiter } from '../middleware/rateLimiter';
+import { csrfProtection } from '../middleware/csrf';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.get('/recommendations/:studentId', authenticate, riskLimiter, authorizeTe
 router.get('/insights/:studentId', authenticate, riskLimiter, authorizeTeacher, AIController.getStudentInsights);
 
 router.get('/institutional-insights', authenticate, riskLimiter, AIController.getInstitutionalInsights);
-router.post('/ask-coach', authenticate, riskLimiter, AIController.askCoach);
+// CSRF-protected & rate-limited AI Coach endpoint (CWE-352 & CWE-770)
+router.post('/ask-coach', authenticate, csrfProtection, riskLimiter, AIController.askCoach);
 
 export default router;

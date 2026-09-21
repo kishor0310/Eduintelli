@@ -24,6 +24,18 @@ export const authLimiter = rateLimit({
   },
 });
 
+// User profile rate limiter (prevents resource exhaustion - CWE-400)
+export const profileLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many profile requests. Please try again after 15 minutes.',
+  },
+});
+
 // Attendance batch operations rate limiter (prevents resource exhaustion - CWE-400)
 export const attendanceLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,

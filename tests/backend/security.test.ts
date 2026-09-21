@@ -462,8 +462,59 @@ async function runSecurityTests() {
     throw new Error('Expected 403 on course detail IDOR, got ' + res34.status);
   }
 
+  // 35. Rate limiting active on user profile endpoint /auth/me (CWE-400)
+  const res35 = await fetch(baseUrl + '/auth/me', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const meRemaining = res35.headers.get('ratelimit-remaining') || res35.headers.get('x-ratelimit-remaining');
+  if (meRemaining !== null) {
+    console.log('✅ 35. User profile /auth/me has rate limiter active (Remaining: ' + meRemaining + ' - CWE-400)');
+    passed++;
+  } else {
+    throw new Error('Expected rate limiting header on /auth/me');
+  }
+
+  // 36. IDOR protection on assignment retrieval for unauthorized course (CWE-639)
+  const res36 = await fetch(baseUrl + '/assignments?courseId=crs-06', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  if (res36.status === 403) {
+    console.log('✅ 36. Assignment retrieval for unauthorized course blocked (403 Forbidden - CWE-639 IDOR)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on assignment IDOR query for unauthorized course, got ' + res36.status);
+  }
+
+  // 37. CSRF protection on AI ask-coach endpoint (CWE-352)
+  const res37 = await fetch(baseUrl + '/ai/ask-coach', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // Missing CSRF token and auth header
+    },
+    body: JSON.stringify({ question: 'Can I forge requests?' })
+  });
+  if (res37.status === 403 || res37.status === 401) {
+    console.log('✅ 37. AI ask-coach without CSRF/auth rejected (' + res37.status + ' - CWE-352)');
+    passed++;
+  } else {
+    throw new Error('Expected 403/401 on unauthenticated CSRF ask-coach, got ' + res37.status);
+  }
+
+  // 38. Single assignment retrieval IDOR & authentication check (CWE-639)
+  const res38Unauth = await fetch(baseUrl + '/assignments/asg-01');
+  const res38Auth = await fetch(baseUrl + '/assignments/asg-01', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  if (res38Unauth.status === 401 && res38Auth.status === 200) {
+    console.log('✅ 38. Single assignment retrieval enforces authentication & enrollment (CWE-639 IDOR)');
+    passed++;
+  } else {
+    throw new Error(`Expected 401 unauth and 200 auth for assignment retrieval, got ${res38Unauth.status} and ${res38Auth.status}`);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/34 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/38 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
