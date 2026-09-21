@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { AdminController } from '../controllers/adminController';
 import { authenticate, authorizeAdmin } from '../middleware/auth';
-import { authLimiter } from '../middleware/rateLimiter';
+import { adminLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-router.get('/dashboard', authLimiter, authenticate, authorizeAdmin, AdminController.getDashboard);
+// Rate-limited admin dashboard endpoint (prevents resource exhaustion - CWE-400)
+router.get('/dashboard', authenticate, authorizeAdmin, adminLimiter, AdminController.getDashboard);
 
 export default router;

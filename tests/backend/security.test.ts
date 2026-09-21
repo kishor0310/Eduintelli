@@ -25,6 +25,12 @@ async function runSecurityTests() {
     { expiresIn: '1h' }
   );
 
+  const adminToken = jwt.sign(
+    { id: 'usr-admin-01', email: 'admin@demo.com', role: 'ADMIN', name: 'Dr. Sarah Jenkins', adminId: 'adm-01' },
+    config.jwtSecret,
+    { expiresIn: '1h' }
+  );
+
   let passed = 0;
 
   // 1. Missing admin role check on /admin/dashboard (CWE-284)
@@ -580,8 +586,34 @@ async function runSecurityTests() {
     throw new Error('Expected 401 on unauthenticated assignment fetch, got ' + res43.status);
   }
 
+  // 44. Rate limiting active on admin dashboard endpoint /admin/dashboard (CWE-400)
+  const res44 = await fetch(baseUrl + '/admin/dashboard', {
+    headers: { Authorization: 'Bearer ' + adminToken }
+  });
+  const adminRemaining = res44.headers.get('ratelimit-remaining') || res44.headers.get('x-ratelimit-remaining');
+  if (adminRemaining !== null && res44.status === 200) {
+    console.log('✅ 44. Admin dashboard has rate limiter active (Remaining: ' + adminRemaining + ' - CWE-400)');
+    passed++;
+  } else {
+    throw new Error('Expected rate limiting header and 200 on /admin/dashboard, got status ' + res44.status);
+  }
+
+  // 45. Institutional insights protected with authorizeAdmin (CWE-284)
+  const res45Student = await fetch(baseUrl + '/ai/institutional-insights', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const res45Admin = await fetch(baseUrl + '/ai/institutional-insights', {
+    headers: { Authorization: 'Bearer ' + adminToken }
+  });
+  if (res45Student.status === 403 && res45Admin.status === 200) {
+    console.log('✅ 45. Institutional insights rejects student (403) and permits admin (200) (CWE-284)');
+    passed++;
+  } else {
+    throw new Error(`Expected 403 student and 200 admin on /ai/institutional-insights, got ${res45Student.status} and ${res45Admin.status}`);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/43 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/45 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

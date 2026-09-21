@@ -97,8 +97,16 @@ export class AIController {
     }
   }
 
-  public static async getInstitutionalInsights(req: Request, res: Response, next: NextFunction) {
+  public static async getInstitutionalInsights(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-284: Verify administrator authorization for institutional insights
+      if (!req.user || req.user.role !== 'ADMIN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Only administrators are authorized to access institutional insights.',
+        });
+      }
+
       const insights = InsightGenerator.generateAdminInsights();
 
       return res.status(200).json({
