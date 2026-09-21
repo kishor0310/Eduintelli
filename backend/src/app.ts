@@ -47,7 +47,7 @@ app.use((req, res, next) => {
   if (req.method === 'GET') {
     const token = generateCsrfToken();
     res.cookie('XSRF-TOKEN', token, {
-      httpOnly: false,
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',

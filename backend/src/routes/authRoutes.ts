@@ -10,7 +10,7 @@ const router = Router();
 router.get('/csrf-token', (req, res) => {
   const token = generateCsrfToken();
   res.cookie('XSRF-TOKEN', token, {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',

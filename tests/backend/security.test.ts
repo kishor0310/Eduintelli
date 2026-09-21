@@ -760,8 +760,18 @@ async function runSecurityTests() {
     throw new Error(`Expected 403 on login without CSRF, got ${resLoginNoCsrf.status} and ${resLoginDummyCsrf.status}`);
   }
 
+  // 53. Anti-CSRF token cookie sets httpOnly flag to prevent XSS exposure (CWE-352)
+  const resCsrfToken = await fetch(baseUrl + '/auth/csrf-token');
+  const setCookieHeader = resCsrfToken.headers.get('set-cookie') || '';
+  if (resCsrfToken.status === 200 && /httponly/i.test(setCookieHeader)) {
+    console.log('✅ 53. Anti-CSRF token cookie sets httpOnly flag to prevent XSS exposure (CWE-352)');
+    passed++;
+  } else {
+    throw new Error(`Expected httpOnly flag in set-cookie header, got: ${setCookieHeader}`);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/52 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/53 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
