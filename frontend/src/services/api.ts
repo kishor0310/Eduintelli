@@ -78,8 +78,22 @@ export async function apiRequest<T = any>(
 
 export const api = {
   // Auth
-  login: (credentials: { email: string; password: string }) =>
-    apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  login: async (credentials: { email: string; password: string; csrf_token?: string; _csrf?: string }) => {
+    let csrf = getCsrfToken();
+    if (!csrf || !csrf.includes('.')) {
+      csrf = await fetchCsrfToken();
+    }
+    const bodyPayload = {
+      ...credentials,
+      csrf_token: csrf,
+      _csrf: csrf,
+    };
+    return apiRequest('/auth/login', {
+      method: 'POST',
+      headers: csrf ? { 'X-CSRF-Token': csrf } : {},
+      body: JSON.stringify(bodyPayload),
+    });
+  },
   register: (payload: any) =>
     apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   getMe: () => apiRequest('/auth/me'),

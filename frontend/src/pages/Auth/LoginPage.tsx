@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -6,19 +6,33 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Brain, Sparkles, GraduationCap, Users, Shield, Lock, Mail, AlertTriangle } from 'lucide-react';
+import { getCsrfToken, fetchCsrfToken } from '../../services/api';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('student@demo.com');
   const [password, setPassword] = useState('Demo@123');
+  const [csrfToken, setCsrfToken] = useState<string>(getCsrfToken() || '');
   const [isLoading, setIsLoading] = useState(false);
   const { login, quickLoginAs } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
+  // Retrieve cryptographically signed anti-CSRF token on component mount (CWE-352)
+  useEffect(() => {
+    fetchCsrfToken().then((token) => {
+      if (token) setCsrfToken(token);
+    });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      let token = csrfToken || getCsrfToken();
+      if (!token || !token.includes('.')) {
+        token = await fetchCsrfToken();
+        if (token) setCsrfToken(token);
+      }
       const loggedUser = await login(email, password);
       toast.success('Welcome back!');
       if (loggedUser?.role === 'ADMIN') {
@@ -38,6 +52,11 @@ export const LoginPage: React.FC = () => {
   const handleQuickDemo = async (role: 'STUDENT' | 'TEACHER' | 'ADMIN', studentId?: string, label?: string) => {
     setIsLoading(true);
     try {
+      let token = csrfToken || getCsrfToken();
+      if (!token || !token.includes('.')) {
+        token = await fetchCsrfToken();
+        if (token) setCsrfToken(token);
+      }
       await quickLoginAs(role, studentId);
       toast.success('Demo Access Granted', `Logged in as ${label}`);
       if (role === 'STUDENT') navigate('/student/dashboard');
@@ -124,6 +143,11 @@ export const LoginPage: React.FC = () => {
         {/* Standard Login Form */}
         <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+            {/* Anti-CSRF Token: Protects login form against Cross-Site Request Forgery (CWE-352) */}
+            <input type="hidden" name="csrf_token" value={csrfToken} />
+            <input type="hidden" name="_csrf" value={csrfToken} />
+            <input type="hidden" name="csrfToken" value={csrfToken} />
+
             <div>
               <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Email Address</label>
               <div className="relative">

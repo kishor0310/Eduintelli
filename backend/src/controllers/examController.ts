@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { db } from '../database/db';
 import { AuthRequest } from '../middleware/auth';
 import { createExamSchema, recordExamResultsSchema } from '../validators';
+import { csrfProtection, isValidCsrfToken } from '../middleware/csrf';
 
 export class ExamController {
   public static async getExaminations(req: AuthRequest, res: Response, next: NextFunction) {
@@ -58,6 +59,18 @@ export class ExamController {
 
   public static async createExamination(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Anti-CSRF token verification on exam creation POST endpoint
+      const csrfToken =
+        req.headers['x-csrf-token'] ||
+        req.headers['xsrf-token'] ||
+        (req.body && (req.body.csrf_token || req.body._csrf));
+      if (csrfToken && !isValidCsrfToken(csrfToken, req)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Invalid anti-CSRF token.',
+        });
+      }
+
       const data = createExamSchema.parse(req.body);
       const newId = `exm-${Date.now()}`;
 
@@ -88,6 +101,18 @@ export class ExamController {
 
   public static async recordResultsBatch(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Anti-CSRF token verification on exam results POST endpoint
+      const csrfToken =
+        req.headers['x-csrf-token'] ||
+        req.headers['xsrf-token'] ||
+        (req.body && (req.body.csrf_token || req.body._csrf));
+      if (csrfToken && !isValidCsrfToken(csrfToken, req)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Invalid anti-CSRF token.',
+        });
+      }
+
       const data = recordExamResultsSchema.parse(req.body);
 
       for (const resItem of data.results) {

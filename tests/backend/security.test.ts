@@ -703,8 +703,65 @@ async function runSecurityTests() {
     throw new Error('Expected authLimiter to block excessive login attempts with 429 status code');
   }
 
+  // 51. CSRF protection on exam POST endpoints (CWE-352)
+  const resExamNoCsrf = await fetch(baseUrl + '/examinations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      courseId: 'crs-01',
+      name: 'Midterm 2',
+      examType: 'MIDTERM',
+      examDate: '2026-10-15',
+      maxScore: 100,
+      weightage: 20
+    })
+  });
+  const resExamDummyCsrf = await fetch(baseUrl + '/examinations', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + teacherToken,
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': 'dummy_invalid_token'
+    },
+    body: JSON.stringify({
+      courseId: 'crs-01',
+      name: 'Midterm 2',
+      examType: 'MIDTERM',
+      examDate: '2026-10-15',
+      maxScore: 100,
+      weightage: 20
+    })
+  });
+  if (resExamNoCsrf.status === 403 && resExamDummyCsrf.status === 403) {
+    console.log('✅ 51. Examination POST endpoints enforce CSRF protection and reject unverified/dummy tokens (CWE-352)');
+    passed++;
+  } else {
+    throw new Error(`Expected 403 on exam POST without CSRF, got ${resExamNoCsrf.status} and ${resExamDummyCsrf.status}`);
+  }
+
+  // 52. CSRF protection on login endpoint (CWE-352)
+  const resLoginNoCsrf = await fetch(baseUrl + '/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'student@demo.com', password: 'badpassword' })
+  });
+  const resLoginDummyCsrf = await fetch(baseUrl + '/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': 'sample_fake_dummy_csrf_token_123'
+    },
+    body: JSON.stringify({ email: 'student@demo.com', password: 'badpassword' })
+  });
+  if (resLoginNoCsrf.status === 403 && resLoginDummyCsrf.status === 403) {
+    console.log('✅ 52. Login endpoint enforces anti-CSRF protection and rejects missing/dummy tokens (CWE-352)');
+    passed++;
+  } else {
+    throw new Error(`Expected 403 on login without CSRF, got ${resLoginNoCsrf.status} and ${resLoginDummyCsrf.status}`);
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/50 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/52 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()

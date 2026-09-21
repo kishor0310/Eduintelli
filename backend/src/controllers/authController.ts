@@ -7,7 +7,7 @@ import { config } from '../config';
 import { loginSchema, registerSchema } from '../validators';
 import { AuthRequest } from '../middleware/auth';
 import { authLimiter } from '../middleware/rateLimiter';
-import { isValidCsrfToken } from '../middleware/csrf';
+import { csrfProtection, isValidCsrfToken } from '../middleware/csrf';
 
 // Rate limiting on login endpoint (prevents brute force & credential stuffing - CWE-307)
 export const loginLimiter = rateLimit({
@@ -24,6 +24,9 @@ export const loginLimiter = rateLimit({
   },
 });
 
+// CWE-352: Anti-CSRF protection middleware reference for login endpoint
+export const loginCsrfProtection = csrfProtection;
+
 // CWE-307: In-controller failed login attempt tracker to prevent brute force & credential stuffing attacks
 const loginAttemptsMap = new Map<string, { count: number; firstAttempt: number }>();
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -32,6 +35,22 @@ const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 export class AuthController {
   // Rate limiter reference for login endpoint (CWE-307)
   public static readonly loginLimiter = loginLimiter;
+
+  // Anti-CSRF protection references for login endpoint (CWE-352)
+  public static readonly csrfProtection = csrfProtection;
+  public static readonly loginCsrfProtection = loginCsrfProtection;
+
+  public static async enforceLoginCsrfProtection(req: Request, res: Response): Promise<boolean> {
+    if ((req as any).loginCsrfProtectionEnforced) return !res.headersSent;
+    (req as any).loginCsrfProtectionEnforced = true;
+    await new Promise<void>((resolve, reject) => {
+      csrfProtection(req, res, (err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+    return !res.headersSent;
+  }
 
   public static async enforceLoginRateLimit(req: Request, res: Response): Promise<boolean> {
     if ((req as any).loginRateLimitEnforced) return !res.headersSent;
@@ -58,6 +77,21 @@ export class AuthController {
 
   public static async login(req: Request, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Enforce anti-CSRF protection and token verification on login endpoint
+      const isCsrfProtected = await AuthController.enforceLoginCsrfProtection(req, res);
+      if (!isCsrfProtected) return;
+
+      const csrfToken =
+        req.headers['x-csrf-token'] ||
+        req.headers['xsrf-token'] ||
+        (req.body && (req.body.csrf_token || req.body._csrf));
+      if (!csrfToken || !isValidCsrfToken(csrfToken, req)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Valid anti-CSRF token required for login.',
+        });
+      }
+
       // Enforce rate limiting on login endpoint (CWE-307)
       const isAllowed = await AuthController.enforceLoginRateLimit(req, res);
       if (!isAllowed) return;
