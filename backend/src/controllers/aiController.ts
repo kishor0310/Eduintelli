@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { AIService } from '../services/ai/aiService';
 import { AuthRequest } from '../middleware/auth';
 import { InsightGenerator } from '../services/ai/insightGenerator';
+import { isValidCsrfToken } from '../middleware/csrf';
 
 export class AIController {
   // CWE-639: Enforce strict IDOR authorization without hardcoded fallback student identifiers
@@ -121,12 +122,14 @@ export class AIController {
 
   public static async askCoach(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // CWE-352: Validate anti-CSRF token / session authorization on AI coaching requests
-      const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'] || req.headers['x-requested-with'] || req.headers.authorization;
-      if (!csrfToken) {
+      // CWE-352: Validate anti-CSRF token validity / session authorization on AI coaching requests
+      const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'];
+      const isCsrfValid = csrfToken ? isValidCsrfToken(csrfToken, req) : false;
+      const isAuthValid = Boolean(req.user && req.headers.authorization?.startsWith('Bearer '));
+      if (!isCsrfValid && !isAuthValid) {
         return res.status(403).json({
           success: false,
-          message: 'Forbidden: CSRF validation failed. Missing anti-CSRF token or authorization header.',
+          message: 'Forbidden: CSRF validation failed. Missing or invalid anti-CSRF token or authorization header.',
         });
       }
 

@@ -8,6 +8,9 @@ import { config } from './config';
 
 export const app = express();
 
+// Trust reverse proxy for accurate client IP resolution in rate limiters
+app.set('trust proxy', 1);
+
 // Whitelist of allowed origins (prevents CSRF via permissive CORS - CWE-352)
 const allowedOrigins = [
   'http://localhost:5173',

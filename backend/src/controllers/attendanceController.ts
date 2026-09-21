@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { db } from '../database/db';
 import { AuthRequest } from '../middleware/auth';
 import { markAttendanceSchema } from '../validators';
+import { isValidCsrfToken } from '../middleware/csrf';
 
 export class AttendanceController {
   public static async getStudentAttendance(req: AuthRequest, res: Response, next: NextFunction) {
@@ -95,6 +96,44 @@ export class AttendanceController {
     }
   }
 
+  public static async getAttendanceList(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: Only faculty or administrators can inspect attendance records.',
+        });
+      }
+
+      let query = `
+        SELECT a.id, a.date, a.status, a.remarks,
+               s.id as student_id, u.name as student_name, s.roll_number,
+               c.id as course_id, c.code as course_code, c.name as course_name
+        FROM attendance a
+        JOIN students s ON a.student_id = s.id
+        JOIN users u ON s.user_id = u.id
+        JOIN courses c ON a.course_id = c.id
+      `;
+      const params: any[] = [];
+
+      if (req.user.role === 'TEACHER' && req.user.teacherId) {
+        query += ` WHERE c.teacher_id = $1`;
+        params.push(req.user.teacherId);
+      }
+
+      query += ` ORDER BY a.date DESC LIMIT 50`;
+      const records = await db.query<any>(query, params);
+
+      return res.status(200).json({
+        success: true,
+        count: records.length,
+        data: records,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public static async getCourseAttendance(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       // CWE-639 IDOR protection: Verify requester is authorized faculty or admin
@@ -144,6 +183,17 @@ export class AttendanceController {
 
   public static async markAttendanceBatch(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      // CWE-352: Validate anti-CSRF token validity / session credentials on attendance marking
+      const csrfToken = req.headers['x-csrf-token'] || req.headers['xsrf-token'];
+      const isCsrfValid = csrfToken ? isValidCsrfToken(csrfToken, req) : false;
+      const isAuthValid = Boolean(req.user && req.headers.authorization?.startsWith('Bearer '));
+      if (!isCsrfValid && !isAuthValid) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: CSRF validation failed. Missing or invalid anti-CSRF token or authorization header.',
+        });
+      }
+
       if (!req.user || (req.user.role !== 'TEACHER' && req.user.role !== 'ADMIN')) {
         return res.status(403).json({
           success: false,

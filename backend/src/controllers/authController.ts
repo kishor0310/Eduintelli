@@ -1,15 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import rateLimit from 'express-rate-limit';
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 login attempts per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many login attempts, please try again later.' }
-});
 import { db } from '../database/db';
 import { config } from '../config';
 import { loginSchema, registerSchema } from '../validators';
@@ -18,8 +9,6 @@ import { AuthRequest } from '../middleware/auth';
 export class AuthController {
   public static async login(req: Request, res: Response, next: NextFunction) {
     try {
-      await loginLimiter(req, res, () => {}); // enforce rate limiting
-      if (res.headersSent) return;
       const { email, password } = loginSchema.parse(req.body);
 
       const user = await db.get<any>('SELECT * FROM users WHERE email = $1', [email]);

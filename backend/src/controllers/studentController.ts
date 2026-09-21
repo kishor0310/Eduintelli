@@ -15,6 +15,33 @@ export class StudentController {
           });
         }
         studentId = req.user.studentId;
+      } else if (req.user?.role === 'TEACHER') {
+        studentId = req.params.id;
+        if (!studentId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Student profile identifier is required for faculty review.',
+          });
+        }
+        if (!req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty profile not associated with this account.',
+          });
+        }
+        // CWE-639 IDOR Protection: Verify teacher instructs at least one course this student is enrolled in
+        const commonCourse = await db.get<any>(
+          `SELECT 1 FROM enrollments e
+           JOIN courses c ON e.course_id = c.id
+           WHERE e.student_id = $1 AND c.teacher_id = $2`,
+          [studentId, req.user.teacherId]
+        );
+        if (!commonCourse) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty can only inspect dashboards for students enrolled in their courses.',
+          });
+        }
       }
       if (!studentId) {
         return res.status(400).json({
@@ -159,6 +186,32 @@ export class StudentController {
           });
         }
         studentId = req.user.studentId;
+      } else if (req.user?.role === 'TEACHER') {
+        studentId = req.params.id;
+        if (!studentId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Student profile identifier is required for faculty review.',
+          });
+        }
+        if (!req.user.teacherId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty profile not associated with this account.',
+          });
+        }
+        const commonCourse = await db.get<any>(
+          `SELECT 1 FROM enrollments e
+           JOIN courses c ON e.course_id = c.id
+           WHERE e.student_id = $1 AND c.teacher_id = $2`,
+          [studentId, req.user.teacherId]
+        );
+        if (!commonCourse) {
+          return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Faculty can only inspect timetables for students enrolled in their courses.',
+          });
+        }
       }
       if (!studentId) {
         return res.status(400).json({

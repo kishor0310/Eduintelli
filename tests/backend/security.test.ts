@@ -176,9 +176,10 @@ async function runSecurityTests() {
   }
 
   // 12. Rate Limiting headers on Auth (CWE-770 & CWE-400)
+  const validCsrf = 'a0b1c2d3-e4f5-4678-8901-abcdef012345';
   const res12 = await fetch(baseUrl + '/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': validCsrf },
     body: JSON.stringify({ email: 'test@demo.com', password: 'badpassword' })
   });
   const ratelimitRemaining = res12.headers.get('ratelimit-remaining') || res12.headers.get('x-ratelimit-remaining');
@@ -612,8 +613,97 @@ async function runSecurityTests() {
     throw new Error(`Expected 403 student and 200 admin on /ai/institutional-insights, got ${res45Student.status} and ${res45Admin.status}`);
   }
 
+  // 46. Teacher IDOR on Student Dashboard (CWE-639)
+  // tch-01 instructs crs-01; std-05 is only enrolled in crs-03 & crs-08 (taught by tch-03)
+  const res46 = await fetch(baseUrl + '/students/std-05/dashboard', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res46.status === 403) {
+    console.log('✅ 46. Teacher IDOR on Student Dashboard blocked for unenrolled student (403 Forbidden - CWE-639)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on teacher accessing unenrolled student dashboard, got ' + res46.status);
+  }
+
+  // 47. Missing authorization on attendance list endpoint (CWE-639)
+  const res47Student = await fetch(baseUrl + '/attendance', {
+    headers: { Authorization: 'Bearer ' + studentToken }
+  });
+  const res47Teacher = await fetch(baseUrl + '/attendance', {
+    headers: { Authorization: 'Bearer ' + teacherToken }
+  });
+  if (res47Student.status === 403 && res47Teacher.status === 200) {
+    console.log('✅ 47. Attendance list endpoint enforces faculty authorization (403 student / 200 teacher - CWE-639)');
+    passed++;
+  } else {
+    throw new Error(`Expected 403 student and 200 teacher on /attendance, got ${res47Student.status} and ${res47Teacher.status}`);
+  }
+
+  // 48. No CSRF protection on attendance marking endpoint (CWE-352)
+  const res48 = await fetch(baseUrl + '/attendance/mark', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      courseId: 'crs-01',
+      date: '2026-09-21',
+      records: [{ studentId: 'std-01', status: 'PRESENT' }]
+    })
+  });
+  if (res48.status === 403) {
+    console.log('✅ 48. Attendance marking endpoint requires CSRF protection credentials (403 Forbidden - CWE-352)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on attendance mark without CSRF token, got ' + res48.status);
+  }
+
+  // 49. CSRF protection only checks token presence, not validity (CWE-352)
+  const res49 = await fetch(baseUrl + '/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': 'dummy_invalid_token'
+    },
+    body: JSON.stringify({
+      name: 'Hacker',
+      email: 'fake_hacker@evil.com',
+      password: 'Password123!'
+    })
+  });
+  if (res49.status === 403) {
+    console.log('✅ 49. CSRF protection verifies cryptographic token validity and rejects dummy tokens (403 Forbidden - CWE-352)');
+    passed++;
+  } else {
+    throw new Error('Expected 403 on invalid CSRF token, got ' + res49.status);
+  }
+
+  // 50. Broken authLimiter allows unlimited login attempts (CWE-307)
+  let blockedByAuthLimiter = false;
+  const testEmail = `brute_target_${Date.now()}@demo.com`;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    const resLogin = await fetch(baseUrl + '/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': validCsrf
+      },
+      body: JSON.stringify({ email: testEmail, password: 'wrong_password_' + attempt })
+    });
+    if (resLogin.status === 429) {
+      blockedByAuthLimiter = true;
+      break;
+    }
+  }
+  if (blockedByAuthLimiter) {
+    console.log('✅ 50. authLimiter enforces 5-attempt brute-force restriction and returns 429 Too Many Requests (CWE-307)');
+    passed++;
+  } else {
+    throw new Error('Expected authLimiter to block excessive login attempts with 429 status code');
+  }
+
   server.close();
-  console.log("\nAll " + passed + "/45 Security Verification Tests Passed Successfully!");
+  console.log("\nAll " + passed + "/50 Security Verification Tests Passed Successfully!");
 }
 
 runSecurityTests()
