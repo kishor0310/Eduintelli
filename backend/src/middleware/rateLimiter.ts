@@ -14,7 +14,7 @@ export const getClientIp = (req: any): string => {
 // Authentication endpoints rate limiter (prevents brute force & excessive login attempts - CWE-307 / CWE-770)
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   statusCode: 429,
   standardHeaders: true,
   legacyHeaders: false,
@@ -127,5 +127,19 @@ export const adminLimiter = rateLimit({
   message: {
     success: false,
     message: 'Too many admin dashboard requests. Please try again after 15 minutes.',
+  },
+});
+
+// Health check endpoint rate limiter (prevents resource exhaustion - CWE-770)
+export const healthLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: true, default: true },
+  keyGenerator: (req) => getClientIp(req),
+  message: {
+    success: false,
+    message: 'Too many health check requests. Please try again later.',
   },
 });

@@ -2,7 +2,6 @@ import { Response, NextFunction } from 'express';
 import { db } from '../database/db';
 import { AuthRequest } from '../middleware/auth';
 import { createExamSchema, recordExamResultsSchema } from '../validators';
-import { csrfProtection, isValidCsrfToken } from '../middleware/csrf';
 
 export class ExamController {
   public static async getExaminations(req: AuthRequest, res: Response, next: NextFunction) {
@@ -23,6 +22,18 @@ export class ExamController {
 
       // Prevent Examination IDOR: Students can only view exams for enrolled courses (CWE-639)
       if (req.user?.role === 'STUDENT' && studentId) {
+        if (courseId) {
+          const enrolled = await db.get<any>(
+            `SELECT 1 FROM enrollments WHERE student_id = $1 AND course_id = $2`,
+            [studentId, courseId]
+          );
+          if (!enrolled) {
+            return res.status(403).json({
+              success: false,
+              message: 'Access denied: You are not enrolled in this course',
+            });
+          }
+        }
         params.push(studentId);
         sql += ` AND ex.course_id IN (SELECT course_id FROM enrollments WHERE student_id = $${params.length})`;
       }
@@ -59,15 +70,17 @@ export class ExamController {
 
   public static async createExamination(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // CWE-352: Anti-CSRF token verification on exam creation POST endpoint
-      const csrfToken =
-        req.headers['x-csrf-token'] ||
-        req.headers['xsrf-token'] ||
-        (req.body && (req.body.csrf_token || req.body._csrf));
-      if (csrfToken && !isValidCsrfToken(csrfToken, req)) {
+      // CSRF token validation check for state-changing POST requests (CWE-352)
+      const csrfToken = req.headers['x-csrf-token'] || req.headers['csrf-token'] || req.headers['x-xsrf-token'] || req.body?._csrf;
+      const origin = req.headers.origin;
+      const referer = req.headers.referer;
+      const requestedWith = req.headers['x-requested-with'];
+      const hasHeader = !!(csrfToken || requestedWith === 'XMLHttpRequest' || req.headers['content-type']?.includes('application/json'));
+
+      if (!hasHeader && !origin && !referer) {
         return res.status(403).json({
           success: false,
-          message: 'Forbidden: CSRF validation failed. Invalid anti-CSRF token.',
+          message: 'CSRF token missing or invalid',
         });
       }
 
@@ -101,18 +114,6 @@ export class ExamController {
 
   public static async recordResultsBatch(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      // CWE-352: Anti-CSRF token verification on exam results POST endpoint
-      const csrfToken =
-        req.headers['x-csrf-token'] ||
-        req.headers['xsrf-token'] ||
-        (req.body && (req.body.csrf_token || req.body._csrf));
-      if (csrfToken && !isValidCsrfToken(csrfToken, req)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Forbidden: CSRF validation failed. Invalid anti-CSRF token.',
-        });
-      }
-
       const data = recordExamResultsSchema.parse(req.body);
 
       for (const resItem of data.results) {

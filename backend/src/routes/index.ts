@@ -9,6 +9,7 @@ import assignmentRoutes from './assignmentRoutes';
 import examRoutes from './examRoutes';
 import aiRoutes from './aiRoutes';
 import reportRoutes from './reportRoutes';
+import { healthLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -23,8 +24,8 @@ router.use('/examinations', examRoutes);
 router.use('/ai', aiRoutes);
 router.use('/reports', reportRoutes);
 
-// Health check endpoint (no version or stack info leakage - CWE-200)
-router.get('/health', (req, res) => {
+// Health check endpoint (rate limited - CWE-770, no version or stack info leakage - CWE-200)
+router.get('/health', healthLimiter, (req, res) => {
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
